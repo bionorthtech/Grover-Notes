@@ -1,0 +1,40 @@
+# Install Grover
+
+Grover publishes desktop builds for macOS, Windows, and Linux. macOS is the primary day-to-day development target, with Windows and Linux builds supported through the release pipeline and fixed as platform issues are found.
+
+## Download
+
+Use the latest stable release unless you are intentionally testing pre-release builds:
+
+- <a href="https://grover.md/download/" target="_self">Download the latest stable build</a>
+- [Browse all GitHub releases](https://github.com/bionorthtech/grover-notes/releases)
+- <a href="https://grover.md/releases/" target="_self">Read the release notes</a>
+
+## Homebrew
+
+On macOS you can install the cask:
+
+```bash
+brew install --cask grover
+```
+
+## Platform Status
+
+| Platform | Status | Notes |
+| --- | --- | --- |
+| macOS | Primary | Apple Silicon and Intel builds are published. Homebrew is available. |
+| Windows | Supported, early | NSIS installers are Authenticode-signed and updater bundles are Tauri-signed. Company-managed SmartScreen, Defender, or WDAC policies can still require IT approval of the Grover publisher before first install. |
+| Linux | Supported, early | AppImage, deb, and RPM artifacts are published. Desktop behavior depends on distribution WebKitGTK and input-method integration. |
+
+See [Supported Platforms](/reference/supported-platforms) for the current support policy.
+
+## Managed Windows Devices
+
+Do not disable SmartScreen or Windows Security to install Grover. On a managed Windows device, validate that the downloaded installer has a valid Grover Authenticode signature, then install it through the normal Windows prompt. If company policy still blocks the first run because reputation is not yet established, ask IT to approve the Grover publisher or deploy the same signed installer through the approved software portal.
+
+## After Installing
+
+1. Open Grover.
+2. Choose the Getting Started vault if you want a guided sample.
+3. Or open an existing folder of Markdown files as a vault.
+4. Use the command palette with `Cmd+K` on macOS or `Ctrl+K` on Linux and Windows.

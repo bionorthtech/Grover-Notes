@@ -1,0 +1,7 @@
+export const REFACTORING_HOME_URL = 'https://refactoring.fm/'
+export const GROVER_DOCS_URL = 'https://bionorthtech.github.io/grover-notes/'
+export const GROVER_PRODUCT_BOARD_URL = 'https://grover.canny.io/'
+export const GROVER_GITHUB_DISCUSSIONS_URL = 'https://github.com/bionorthtech/grover-notes/discussions'
+export const GROVER_GITHUB_CONTRIBUTING_URL = 'https://github.com/bionorthtech/grover-notes/blob/main/CONTRIBUTING.md'
+export const GROVER_GITHUB_ISSUES_URL = 'https://github.com/bionorthtech/grover-notes/issues'
+export const GROVER_GITHUB_PULL_REQUESTS_URL = 'https://github.com/bionorthtech/grover-notes/pulls'
