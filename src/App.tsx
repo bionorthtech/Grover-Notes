@@ -146,6 +146,9 @@ declare global {
 
 const DEFAULT_SELECTION: SidebarSelection = INBOX_SELECTION
 
+// Collapses the navigation sidebar to an Obsidian-style icon-only rail.
+const SIDEBAR_RAIL_STORAGE_KEY = 'grover:sidebar-rail'
+
 /** Wraps useEditorSave to also keep outgoingLinks in sync on save and on content change. */
 function App() {
   const noteWindowParams = useMemo(() => isNoteWindow() ? getNoteWindowParams() : null, [])
@@ -158,6 +161,16 @@ function App() {
 
 function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | null }) {
   const aiWorkspaceWindow = false
+  const [sidebarRail, setSidebarRail] = useState<boolean>(() => {
+    try { return localStorage.getItem(SIDEBAR_RAIL_STORAGE_KEY) === '1' } catch { return false }
+  })
+  const toggleSidebarRail = useCallback(() => {
+    setSidebarRail((collapsed) => {
+      const next = !collapsed
+      try { localStorage.setItem(SIDEBAR_RAIL_STORAGE_KEY, next ? '1' : '0') } catch { /* storage unavailable */ }
+      return next
+    })
+  }, [])
   const [selection, setSelection] = useState<SidebarSelection>(DEFAULT_SELECTION)
   const [noteListFilter, setNoteListFilter] = useState<NoteListFilter>('open')
   const [pendingNoteListPdfExportPath, setPendingNoteListPdfExportPath] = useState<string | null>(null)
@@ -1568,7 +1581,16 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         <div className="app">
           {sidebarVisible && (
             <>
-              <div className="app__sidebar" style={{ width: layout.sidebarWidth }}>
+              <div className={`app__sidebar${sidebarRail ? ' app__sidebar--rail' : ''}`} style={{ width: sidebarRail ? 56 : layout.sidebarWidth }}>
+                <button
+                  type="button"
+                  className="sidebar-rail-toggle"
+                  aria-label={sidebarRail ? 'Expand sidebar' : 'Collapse sidebar to icons'}
+                  title={sidebarRail ? 'Expand sidebar' : 'Collapse to icons'}
+                  onClick={toggleSidebarRail}
+                >
+                  {sidebarRail ? '»' : '«'}
+                </button>
                 <Sidebar entries={visibleEntries} folders={vault.folders} views={vault.views} selection={effectiveSelection} onSelect={handleSetSelection} onSelectNote={notes.handleSelectNote} onSelectFavorite={handleOpenFavorite} onReorderFavorites={entryActions.handleReorderFavorites} onCreateType={notes.handleCreateNoteImmediate} onCreateNewType={dialogs.openCreateType} onCustomizeType={entryActions.handleCustomizeType} onUpdateTypeTemplate={entryActions.handleUpdateTypeTemplate} onReorderSections={entryActions.handleReorderSections} onRenameSection={entryActions.handleRenameSection} onDeleteType={handleDeleteType} onToggleTypeVisibility={entryActions.handleToggleTypeVisibility} onCreateFolder={handleCreateFolder} onRenameFolder={folderActions.renameFolder} onDeleteFolder={folderActions.requestDeleteFolder} folderFileActions={fileActions.folderActions} renamingFolderPath={folderActions.renamingFolderPath} onStartRenameFolder={folderActions.startFolderRename} onCancelRenameFolder={folderActions.cancelFolderRename} onCreateView={dialogs.openCreateView} onEditView={handleEditView} onDeleteView={handleDeleteView} onUpdateViewDefinition={handleSidebarUpdateViewDefinition} onReorderViews={canReorderSavedViews ? viewOrdering.onReorderViews : undefined} showInbox={explicitOrganizationEnabled} inboxCount={inboxCount} allNotesFileVisibility={allNotesFileVisibility} pluralizeTypeLabels={settings.sidebar_type_pluralization_enabled ?? true} onCollapse={handleCollapseSidebar} onGoBack={handleGoBack} onGoForward={handleGoForward} canGoBack={canGoBack} canGoForward={canGoForward} locale={appLocale} loading={isVaultContentLoading} vaultRootPath={resolvedPath} workspaceOrder={vaultWorkspaceOrder} />
               </div>
               <ResizeHandle onResize={layout.handleSidebarResize} />

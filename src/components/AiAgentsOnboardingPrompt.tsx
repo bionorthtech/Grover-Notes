@@ -30,7 +30,7 @@ function getPromptCopy(statuses: AiAgentsStatus) {
 
   if (!hasAnyInstalledAiAgent(statuses)) {
     return {
-      accentClassName: 'bg-[var(--feedback-warning-bg)] text-[var(--feedback-warning-text)]',
+      accentClassName: 'bg-[var(--feedback-success-bg)] text-[var(--feedback-success-text)]',
       description: 'Connect a local model, an API provider, or a desktop coding agent.',
       icon: <Bot className="size-7" />,
       title: 'Choose how Grover should use AI',
@@ -102,7 +102,7 @@ function AgentStatusList({ statuses }: { statuses: AiAgentsStatus }) {
               </div>
             </div>
             <span
-              className={`rounded-full px-2 py-1 text-[11px] font-medium ${ready ? 'bg-[var(--feedback-success-bg)] text-[var(--feedback-success-text)]' : 'bg-[var(--feedback-warning-bg)] text-[var(--feedback-warning-text)]'}`}
+              className={`rounded-full px-2 py-1 text-[11px] font-medium ${ready ? 'bg-[var(--feedback-success-bg)] text-[var(--feedback-success-text)]' : 'bg-muted text-muted-foreground'}`}
             >
               {ready ? 'Installed' : 'Missing'}
             </span>
@@ -152,11 +152,11 @@ export function AiAgentsOnboardingPrompt({
           <AiModeChoices />
           {showLegacyClaudeCompatibility ? (
             <div
-              className="rounded-lg border border-[var(--feedback-warning-border)] bg-[var(--feedback-warning-bg)] px-4 py-3 text-left"
+              className="rounded-lg border border-[var(--accent-green)] bg-[var(--feedback-success-bg)] px-4 py-3 text-left"
               data-testid="claude-onboarding-screen"
             >
-              <div className="text-sm font-medium text-[var(--feedback-warning-text)]">Claude Code not detected</div>
-              <p className="mt-1 text-xs leading-5 text-[var(--feedback-warning-text)]">
+              <div className="text-sm font-medium text-[var(--feedback-success-text)]">Claude Code not detected</div>
+              <p className="mt-1 text-xs leading-5 text-[var(--feedback-success-text)]">
                 Install Claude Code or continue without it.
               </p>
             </div>

@@ -20,6 +20,7 @@ export function SidebarGroupHeader({
 }: SidebarGroupHeaderProps) {
   return (
     <div
+      data-sidebar-group-header="true"
       className="flex w-full items-center justify-between text-muted-foreground"
       style={{ padding: count != null ? SIDEBAR_GROUP_HEADER_PADDING.withCount : SIDEBAR_GROUP_HEADER_PADDING.regular }}
     >
@@ -29,7 +30,7 @@ export function SidebarGroupHeader({
         onClick={onToggle}
       >
         {collapsed ? <CaretRight size={12} /> : <CaretDown size={12} />}
-        <span className="text-[10px] font-semibold" style={{ letterSpacing: 0.5 }}>{label}</span>
+        <span data-sidebar-label="true" className="text-[10px] font-semibold" style={{ letterSpacing: 0.5 }}>{label}</span>
       </button>
       {children ?? (count != null && (
         <SidebarCountPill count={count} className="text-muted-foreground" compact style={{ background: 'var(--muted)' }} />

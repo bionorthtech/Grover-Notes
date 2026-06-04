@@ -1130,7 +1130,7 @@ describe('Sidebar', () => {
       expect(favoriteIcon).not.toBeNull()
       expect(favoriteIcon!.getAttribute('width')).toBe('16')
       expect(favoriteIcon!.getAttribute('height')).toBe('16')
-      expect(favoriteIcon!.getAttribute('style')).toContain('var(--accent-red)')
+      expect(favoriteIcon!.getAttribute('style')).toContain('var(--text-secondary)')
       return favoriteIcon as SVGElement
     }
 
@@ -1240,7 +1240,7 @@ describe('Sidebar', () => {
       const recipeRow = screen.getByText('Sourdough').closest('.cursor-pointer')
       const recipeIcon = recipeRow?.querySelector('svg')
 
-      expect(recipeIcon?.getAttribute('style')).toContain('var(--muted-foreground)')
+      expect(recipeIcon?.getAttribute('style')).toContain('var(--text-secondary)')
       expect(within(recipeRow as HTMLElement).getByText('Sourdough')).toBeInTheDocument()
     })
   })
@@ -1541,7 +1541,7 @@ describe('Sidebar', () => {
         background: 'var(--swatch-blue-light)',
         color: 'var(--swatch-blue)',
       })
-      expect(icon).toHaveStyle({ color: 'var(--swatch-blue)' })
+      expect(icon).toHaveStyle({ color: 'var(--text-secondary)' })
       expect(countChip).toHaveStyle({
         background: 'var(--swatch-blue)',
         color: 'var(--text-inverse)',

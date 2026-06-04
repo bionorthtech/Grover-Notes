@@ -117,7 +117,7 @@ function FolderSelectButton({
       ) : (
         <Folder size={17} className="size-[17px] shrink-0" />
       )}
-      <span className="truncate">{node.name}</span>
+      <span data-sidebar-label="true" title={node.name} className="truncate">{node.name}</span>
     </Button>
   )
 }

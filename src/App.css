@@ -20,6 +20,60 @@
   min-width: 220px;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* Obsidian-style collapsed icon rail */
+.app__sidebar--rail {
+  min-width: 56px !important;
+}
+.app__sidebar--rail [data-sidebar-label],
+.app__sidebar--rail [data-sidebar-group-header],
+.app__sidebar--rail [data-testid="sidebar-count-chip"],
+.app__sidebar--rail [data-testid="view-count-chip"],
+.app__sidebar--rail [data-testid="sidebar-count-skeleton"] {
+  display: none !important;
+}
+.app__sidebar--rail .app__sidebar > *,
+.app__sidebar--rail [data-testid="sidebar-top-nav"] {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+/* Center the icon in each nav/section row when collapsed */
+.app__sidebar--rail [data-testid="sidebar-top-nav"] button,
+.app__sidebar--rail [data-sidebar-section] button,
+.app__sidebar--rail [data-sidebar-section] [role="button"] {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.sidebar-rail-toggle {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sidebar-rail-toggle:hover {
+  background: var(--state-hover);
+  color: var(--text-primary);
+}
+.app__sidebar--rail .sidebar-rail-toggle {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .app__sidebar > * {

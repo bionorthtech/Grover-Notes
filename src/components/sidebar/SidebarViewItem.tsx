@@ -49,14 +49,12 @@ function getViewRowStyle(showCount: boolean, isActive: boolean, accent: ViewAcce
 function ViewIcon({
   icon,
   isActive,
-  accent,
 }: {
   icon: string | null
   isActive: boolean
-  accent: ViewAccent | null
 }) {
-  if (icon) return <NoteTitleIcon icon={icon} size={16} color={accent?.color} />
-  return <Funnel size={16} weight={isActive ? 'fill' : 'regular'} style={accent ? { color: accent.color } : undefined} />
+  if (icon) return <NoteTitleIcon icon={icon} size={16} color={'var(--text-secondary)'} />
+  return <Funnel size={16} weight={isActive ? 'fill' : 'regular'} style={{ color: 'var(--text-secondary)' }} />
 }
 
 function ViewCountChip({
@@ -129,7 +127,7 @@ export function SidebarViewItem({
           className={rowClassName}
           style={rowStyle}
         >
-          <ViewIcon icon={view.definition.icon} isActive={isActive} accent={accent} />
+          <ViewIcon icon={view.definition.icon} isActive={isActive} />
           <ViewRenameInput
             initialValue={view.definition.name}
             locale={locale}
@@ -149,8 +147,8 @@ export function SidebarViewItem({
           onDoubleClick={startRename}
           onKeyDown={handleRowKeyDown}
         >
-          <ViewIcon icon={view.definition.icon} isActive={isActive} accent={accent} />
-          <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{view.definition.name}</span>
+          <ViewIcon icon={view.definition.icon} isActive={isActive} />
+          <span data-sidebar-label="true" title={view.definition.name} className="min-w-0 flex-1 truncate text-[13px] font-medium">{view.definition.name}</span>
           <ViewCountChip count={count} isActive={isActive} accent={accent} />
         </button>
       )}

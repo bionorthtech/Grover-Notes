@@ -141,7 +141,7 @@ export function SidebarLoadingCountPill({ compact, testId = 'sidebar-count-skele
 }
 
 function NavItemLabel({ label, compact }: { label: string; compact?: boolean }) {
-  return <span className={cn("min-w-0 flex-1 truncate text-left font-medium", getNavItemTextClass(compact))}>{label}</span>
+  return <span data-sidebar-label="true" title={label} className={cn("min-w-0 flex-1 truncate text-left font-medium", getNavItemTextClass(compact))}>{label}</span>
 }
 
 function NavItemCount({
@@ -460,6 +460,7 @@ function SectionHeaderLabel({
   return (
     <button
       type="button"
+      data-sidebar-label="true"
       className="min-w-0 truncate border-0 bg-transparent p-0 text-left text-[13px] font-medium"
       style={{ marginLeft: 4, color: getSectionHeaderTitleColor(isActive, sectionColor) }}
       onDoubleClick={(event) => {
@@ -532,7 +533,7 @@ function SectionHeader({ label, type, Icon, sectionColor, sectionLightColor, ite
       {...dragHandleProps}
     >
       <div className="flex min-w-0 flex-1 items-center" style={{ gap: 4 }}>
-        <Icon size={16} weight={getSectionHeaderIconWeight(isActive)} style={{ color: sectionColor, flexShrink: 0 }} />
+        <Icon size={16} weight={getSectionHeaderIconWeight(isActive)} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
         <SectionHeaderLabel
           type={type}
           label={label}

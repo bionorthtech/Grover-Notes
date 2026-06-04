@@ -69,8 +69,8 @@ function SortableFavoriteItem({
         onClick={onSelect}
       >
         <div className="flex min-w-0 flex-1 items-center" style={{ gap: 4 }}>
-          <NoteTitleIcon icon={icon} size={16} color={typeColor} />
-          <span className="min-w-0 truncate border-0 bg-transparent p-0 text-left text-[13px] font-medium" style={{ marginLeft: 4, color: isActive ? typeColor : undefined }}>
+          <NoteTitleIcon icon={icon} size={16} color={'var(--text-secondary)'} />
+          <span data-sidebar-label="true" title={entry.title} className="min-w-0 truncate border-0 bg-transparent p-0 text-left text-[13px] font-medium" style={{ marginLeft: 4, color: isActive ? typeColor : undefined }}>
             {entry.title}
           </span>
         </div>
