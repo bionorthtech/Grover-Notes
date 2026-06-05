@@ -162,7 +162,8 @@ function App() {
 function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | null }) {
   const aiWorkspaceWindow = false
   const [sidebarRail, setSidebarRail] = useState<boolean>(() => {
-    try { return localStorage.getItem(SIDEBAR_RAIL_STORAGE_KEY) === '1' } catch { return false }
+    // Default to the collapsed icon rail unless the user explicitly expanded it.
+    try { return localStorage.getItem(SIDEBAR_RAIL_STORAGE_KEY) !== '0' } catch { return true }
   })
   const toggleSidebarRail = useCallback(() => {
     setSidebarRail((collapsed) => {

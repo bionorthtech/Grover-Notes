@@ -250,7 +250,7 @@ function StatusBarFooter(props: StatusBarFooterProps) {
         columnGap: compact ? 6 : 10,
         background: 'var(--sidebar)',
         borderTop: '1px solid var(--border-subtle)',
-        padding: stacked ? '3px 10px' : '0 10px',
+        padding: stacked ? '3px 6px' : '0 6px',
         fontSize: 11,
         color: 'var(--text-tertiary)',
         position: 'relative',

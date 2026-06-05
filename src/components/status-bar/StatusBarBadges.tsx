@@ -730,13 +730,13 @@ export function ChangesBadge({
       <StatusBarSeparator show={showSeparator} />
       <StatusBarAction copy={{ label: translate(locale, 'status.changes.view') }} onClick={onClick} testId="status-modified-count" compact={compact}>
         <span style={ICON_STYLE}>
-          <GitDiff size={13} style={{ color: 'var(--accent-orange)' }} />
+          <GitDiff size={13} style={{ color: 'var(--accent-blue)' }} />
           <span
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'var(--accent-orange)',
+              background: 'var(--accent-blue)',
               color: 'var(--text-inverse)',
               borderRadius: 9,
               padding: '0 5px',
