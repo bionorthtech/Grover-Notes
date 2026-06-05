@@ -4,9 +4,9 @@ import type { VaultEntry } from '../types'
 
 describe('getTypeColor', () => {
   it('returns hardcoded color for known types', () => {
-    expect(getTypeColor('Project')).toBe('var(--accent-red)')
-    expect(getTypeColor('Person')).toBe('var(--accent-yellow)')
-    expect(getTypeColor('Topic')).toBe('var(--accent-green)')
+    expect(getTypeColor('Project')).toBe('var(--accent-blue)')
+    expect(getTypeColor('Person')).toBe('var(--accent-blue)')
+    expect(getTypeColor('Topic')).toBe('var(--accent-blue)')
   })
 
   it('returns neutral muted color for null type', () => {
@@ -26,7 +26,7 @@ describe('getTypeColor', () => {
   })
 
   it('ignores invalid custom color key', () => {
-    expect(getTypeColor('Project', 'invalid')).toBe('var(--accent-red)')
+    expect(getTypeColor('Project', 'invalid')).toBe('var(--accent-blue)')
   })
 
   it('uses gray custom color key', () => {
@@ -41,8 +41,8 @@ describe('getTypeColor', () => {
 
 describe('getTypeLightColor', () => {
   it('returns hardcoded light color for known types', () => {
-    expect(getTypeLightColor('Project')).toBe('var(--accent-red-light)')
-    expect(getTypeLightColor('Person')).toBe('var(--accent-yellow-light)')
+    expect(getTypeLightColor('Project')).toBe('var(--accent-blue-light)')
+    expect(getTypeLightColor('Person')).toBe('var(--accent-blue-light)')
   })
 
   it('returns neutral muted light color for null type', () => {

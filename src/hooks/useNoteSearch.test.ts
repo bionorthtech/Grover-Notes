@@ -319,8 +319,8 @@ describe('useNoteSearch', () => {
     expect(pasta?.TypeIcon).toBeDefined()
     // Built-in type still works
     const project = result.current.results.find(r => r.title === 'My Project')
-    expect(project?.typeColor).toBe('var(--accent-red)')
-    expect(project?.typeLightColor).toBe('var(--accent-red-light)')
+    expect(project?.typeColor).toBe('var(--accent-blue)')
+    expect(project?.typeLightColor).toBe('var(--accent-blue-light)')
     expect(project?.TypeIcon).toBeDefined()
   })
 })

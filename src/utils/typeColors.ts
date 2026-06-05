@@ -21,25 +21,27 @@ export function buildTypeEntryMap(entries: VaultEntry[]): Record<string, VaultEn
   return map
 }
 
+// Grover identity: type tags default to the brand green. Users can still assign a
+// custom per-type colour, which takes precedence (see getTypeColor).
 const TYPE_COLOR_MAP: Record<string, string> = {
-  Project: 'var(--accent-red)',
-  Experiment: 'var(--accent-red)',
-  Responsibility: 'var(--accent-purple)',
-  Procedure: 'var(--accent-purple)',
-  Person: 'var(--accent-yellow)',
-  Event: 'var(--accent-yellow)',
-  Topic: 'var(--accent-green)',
+  Project: 'var(--accent-blue)',
+  Experiment: 'var(--accent-blue)',
+  Responsibility: 'var(--accent-blue)',
+  Procedure: 'var(--accent-blue)',
+  Person: 'var(--accent-blue)',
+  Event: 'var(--accent-blue)',
+  Topic: 'var(--accent-blue)',
   Type: 'var(--accent-blue)',
 }
 
 const TYPE_LIGHT_COLOR_MAP: Record<string, string> = {
-  Project: 'var(--accent-red-light)',
-  Experiment: 'var(--accent-red-light)',
-  Responsibility: 'var(--accent-purple-light)',
-  Procedure: 'var(--accent-purple-light)',
-  Person: 'var(--accent-yellow-light)',
-  Event: 'var(--accent-yellow-light)',
-  Topic: 'var(--accent-green-light)',
+  Project: 'var(--accent-blue-light)',
+  Experiment: 'var(--accent-blue-light)',
+  Responsibility: 'var(--accent-blue-light)',
+  Procedure: 'var(--accent-blue-light)',
+  Person: 'var(--accent-blue-light)',
+  Event: 'var(--accent-blue-light)',
+  Topic: 'var(--accent-blue-light)',
   Type: 'var(--accent-blue-light)',
 }
 
