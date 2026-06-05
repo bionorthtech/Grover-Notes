@@ -149,7 +149,7 @@ describe('NoteItem', () => {
       />,
     )
 
-    expect(screen.getByTestId('type-icon')).toHaveStyle({ color: 'rgb(0, 255, 255)' })
+    expect(screen.getByTestId('type-icon')).toHaveStyle({ color: 'var(--text-secondary)' })
   })
 
   it('shows the title with filename metadata when a change status is present', () => {

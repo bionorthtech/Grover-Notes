@@ -239,20 +239,20 @@ function StatusBarFooter(props: StatusBarFooterProps) {
     <footer
       data-testid="status-bar"
       style={{
-        minHeight: 30,
-        height: stacked ? 'auto' : 30,
+        minHeight: 24,
+        height: stacked ? 'auto' : 24,
         flexShrink: 0,
         display: 'flex',
         flexWrap: stacked ? 'wrap' : 'nowrap',
         alignItems: stacked ? 'flex-start' : 'center',
         justifyContent: stacked ? 'flex-start' : 'space-between',
         rowGap: stacked ? 4 : 0,
-        columnGap: compact ? 8 : 12,
+        columnGap: compact ? 6 : 10,
         background: 'var(--sidebar)',
-        borderTop: '1px solid var(--border)',
-        padding: stacked ? '4px 8px' : '0 8px',
-        fontSize: 12,
-        color: 'var(--muted-foreground)',
+        borderTop: '1px solid var(--border-subtle)',
+        padding: stacked ? '3px 10px' : '0 10px',
+        fontSize: 11,
+        color: 'var(--text-tertiary)',
         position: 'relative',
         zIndex: STATUS_BAR_STACKING_Z_INDEX,
       }}

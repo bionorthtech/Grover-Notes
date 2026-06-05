@@ -527,7 +527,7 @@ describe('StatusBar', () => {
 
     expect(screen.getByTestId('status-bar')).toHaveStyle({
       flexWrap: 'nowrap',
-      height: '30px',
+      height: '24px',
     })
     expect(screen.getByTestId('status-commit-push')).toBeInTheDocument()
     expect(screen.getByTestId('status-pulse')).toBeInTheDocument()
@@ -543,7 +543,7 @@ describe('StatusBar', () => {
 
     expect(screen.getByTestId('status-bar')).toHaveStyle({
       flexWrap: 'nowrap',
-      height: '30px',
+      height: '24px',
     })
     expect(screen.getByTestId('status-commit-push')).toBeInTheDocument()
     expect(screen.getByTestId('status-pulse')).toBeInTheDocument()

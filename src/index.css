@@ -102,8 +102,8 @@
   --feedback-error-bg: var(--accent-red-light);
 
   /* --- Syntax and diff roles (light mode) --- */
-  --syntax-heading: #0969DA;
-  --syntax-link: #0969DA;
+  --syntax-heading: #0A7A45;
+  --syntax-link: #0A7A45;
   --syntax-monospace: #C9383E;
   --syntax-monospace-bg: rgba(175, 184, 193, 0.15);
   --syntax-muted: #636C76;
@@ -259,8 +259,8 @@
   --feedback-error-bg: var(--accent-red-light);
 
   /* --- Syntax and diff roles (dark mode) --- */
-  --syntax-heading: #83B2FF;
-  --syntax-link: #83B2FF;
+  --syntax-heading: #6FD79C;
+  --syntax-link: #6FD79C;
   --syntax-monospace: #FFA6A3;
   --syntax-monospace-bg: rgba(167, 176, 189, 0.16);
   --syntax-muted: #9C9488;

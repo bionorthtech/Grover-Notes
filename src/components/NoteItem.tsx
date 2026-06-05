@@ -121,11 +121,9 @@ function noteItemClassName(state: NoteItemVisualState) {
 
 function NoteTypeIndicator({
   TypeIcon,
-  typeColor,
   filePreviewKind,
 }: {
   TypeIcon: ComponentType<SVGAttributes<SVGSVGElement>>
-  typeColor: string
   filePreviewKind?: FilePreviewKind
 }) {
   return (
@@ -133,7 +131,7 @@ function NoteTypeIndicator({
       width={14}
       height={14}
       className="absolute right-3 top-2.5"
-      style={{ color: typeColor }}
+      style={{ color: 'var(--text-secondary)' }}
       data-testid="type-icon"
       data-file-preview-kind={filePreviewKind}
     />
@@ -234,7 +232,6 @@ function StandardNoteContent({
   isUnavailableBinary,
   noteStatus,
   isSelected,
-  typeColor,
   displayProps,
   allEntries,
   typeEntryMap,
@@ -245,7 +242,6 @@ function StandardNoteContent({
   isUnavailableBinary: boolean
   noteStatus: NoteStatus
   isSelected: boolean
-  typeColor: string
   displayProps: string[]
   allEntries: VaultEntry[]
   typeEntryMap: Record<string, VaultEntry>
@@ -257,7 +253,7 @@ function StandardNoteContent({
 
   return (
     <>
-      <NoteTypeIndicator TypeIcon={TypeIcon} typeColor={typeColor} filePreviewKind={previewKind} />
+      <NoteTypeIndicator TypeIcon={TypeIcon} filePreviewKind={previewKind} />
       <div className="space-y-2" data-testid="note-content-stack">
         {isBinary ? (
           <NoteTitleRow
@@ -499,7 +495,6 @@ function NoteItemContent({
   isSelected,
   noteStatus,
   changeStatus,
-  typeColor,
   displayProps,
   allEntries,
   typeEntryMap,
@@ -511,7 +506,6 @@ function NoteItemContent({
   isSelected: boolean
   noteStatus: NoteStatus
   changeStatus?: NoteItemProps['changeStatus']
-  typeColor: string
   displayProps: string[]
   allEntries: VaultEntry[]
   typeEntryMap: Record<string, VaultEntry>
@@ -535,7 +529,6 @@ function NoteItemContent({
       isUnavailableBinary={isUnavailableBinary}
       noteStatus={noteStatus}
       isSelected={isSelected}
-      typeColor={typeColor}
       displayProps={displayProps}
       allEntries={allEntries}
       typeEntryMap={typeEntryMap}
@@ -583,7 +576,6 @@ export function NoteItem({ entry, isSelected, isMultiSelected = false, isHighlig
         isSelected={isSelected}
         noteStatus={noteStatus}
         changeStatus={changeStatus}
-        typeColor={typeColor}
         displayProps={displayProps}
         allEntries={allEntries ?? [entry]}
         typeEntryMap={typeEntryMap}

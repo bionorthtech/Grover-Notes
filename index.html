@@ -39,9 +39,9 @@
     </script>
     <style>
       :root {
-        color-scheme: light;
-        background: #FFFFFF;
-        color: #37352F;
+        color-scheme: dark;
+        background: #1F1E1B;
+        color: #E6E1D8;
       }
       :root[data-theme="dark"] {
         color-scheme: dark;
@@ -99,7 +99,7 @@
           }
         }
         function resolveTheme(value) {
-          var mode = normalizeTheme(value) || 'light';
+          var mode = normalizeTheme(value) || 'dark';
           return mode === 'system' ? (prefersDarkTheme() ? 'dark' : 'light') : mode;
         }
         function applyTheme(value) {
@@ -116,7 +116,7 @@
           }
           applyTheme(mode);
         } catch {
-          applyTheme('light');
+          applyTheme('dark');
         }
       })();
     </script>

@@ -222,7 +222,7 @@ describe('SettingsPanel', () => {
       autogit_idle_threshold_seconds: 90,
       autogit_inactive_threshold_seconds: 30,
       release_channel: null,
-      theme_mode: 'light',
+      theme_mode: 'dark',
       date_display_format: 'friendly',
       note_width_mode: 'normal',
       sidebar_type_pluralization_enabled: true,
@@ -403,14 +403,14 @@ describe('SettingsPanel', () => {
     )
   })
 
-  it('defaults the color mode control to light', () => {
+  it('defaults the color mode control to dark', () => {
     render(
       <SettingsPanel open={true} settings={emptySettings} onSave={onSave} onClose={onClose} />
     )
 
     expect(screen.getByTestId('settings-theme-mode')).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByRole('radio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('radio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByRole('radio', { name: 'System' })).toHaveAttribute('aria-checked', 'false')
   })
 
