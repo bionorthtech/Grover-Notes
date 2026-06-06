@@ -73,6 +73,9 @@
   /* True blue, reserved for the labeled "Blue" swatch in the color picker. */
   --swatch-blue: #155DFF;
   --swatch-blue-light: rgba(21, 93, 255, 0.10);
+
+  /* Signature motion: gentle fade-up used by empty states and the Grover mark. */
+  --grover-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --accent-green: #38A169;
   --accent-green-light: rgba(56, 161, 105, 0.1);
   --accent-orange: #D9730D;
@@ -614,4 +617,16 @@
 @keyframes typing-bounce {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* Signature fade-up motion for empty states / the Grover mark. */
+@keyframes grover-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.grover-fade-up {
+  animation: grover-fade-up 0.45s var(--grover-motion-ease, ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .grover-fade-up { animation: none; }
 }

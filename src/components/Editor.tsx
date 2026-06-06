@@ -7,6 +7,7 @@ import { uploadImageFile } from '../hooks/useImageDrop'
 import { DEFAULT_AI_AGENT, type AiAgentId, type AiAgentReadiness } from '../lib/aiAgents'
 import type { AiTarget } from '../lib/aiTargets'
 import { translate, type AppLocale } from '../lib/i18n'
+import { GroverMark } from './GroverMark'
 import { RUNTIME_STYLE_NONCE } from '../lib/runtimeStyleNonce'
 import type { VaultEntry, GitCommit, NoteWidthMode, NoteStatus, WorkspaceIdentity } from '../types'
 import type { NoteListItem } from '../utils/ai-context'
@@ -186,7 +187,8 @@ function EditorEmptyState({ locale = 'en' }: { locale?: AppLocale }) {
         onMouseDown={onMouseDown}
         style={{ height: breadcrumbBarHeight }}
       />
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+      <div className="grover-fade-up flex flex-1 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
+        <GroverMark size={56} />
         <p className="m-0 text-[15px]">{translate(locale, 'editor.empty.selectNote')}</p>
         <span className="text-xs text-muted-foreground">{translate(locale, 'editor.empty.shortcuts', { quickOpen: quickOpenShortcut, newNote: newNoteShortcut })}</span>
       </div>
