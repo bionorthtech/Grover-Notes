@@ -12,6 +12,7 @@ import { createTranslator, type AppLocale } from '../lib/i18n'
 import { formatDroppedPathList } from './inlineWikilinkDropText'
 import { CommandPaletteAiMode } from './CommandPaletteAiMode'
 import { Input } from './ui/input'
+import { GroverMark } from './GroverMark'
 import { useNativePathDrop } from './useNativePathDrop'
 
 interface CommandPaletteProps {
@@ -163,18 +164,21 @@ function CommandPaletteInput({
   })
 
   return (
-    <Input
-      ref={inputRef}
-      className="h-auto rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-4 py-3 text-[15px] text-foreground shadow-none transition-none outline-none placeholder:text-muted-foreground focus-visible:border-border focus-visible:ring-0 md:text-[15px]"
-      type="text"
-      placeholder={placeholder}
-      value={query}
-      spellCheck={false}
-      autoCorrect="off"
-      autoCapitalize="off"
-      autoComplete="off"
-      onChange={(event) => onChange(event.target.value)}
-    />
+    <div className="flex items-center gap-2.5 border-b border-border px-4">
+      <GroverMark size={18} className="shrink-0 opacity-90" />
+      <Input
+        ref={inputRef}
+        className="h-auto rounded-none border-0 bg-transparent px-0 py-3 text-[15px] text-foreground shadow-none transition-none outline-none placeholder:text-muted-foreground focus-visible:ring-0 md:text-[15px]"
+        type="text"
+        placeholder={placeholder}
+        value={query}
+        spellCheck={false}
+        autoCorrect="off"
+        autoCapitalize="off"
+        autoComplete="off"
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
   )
 }
 
@@ -427,7 +431,7 @@ function OpenCommandPalette({
       />
       <div
         className={cn(
-          'relative z-10 flex w-[520px] max-h-[440px] max-w-[90vw] flex-col self-start overflow-hidden rounded-xl border border-[var(--border-dialog)] bg-popover shadow-[0_8px_32px_var(--shadow-dialog)]',
+          'grover-fade-up relative z-10 flex w-[520px] max-h-[440px] max-w-[90vw] flex-col self-start overflow-hidden rounded-xl border border-[var(--border-dialog)] bg-popover shadow-[0_8px_32px_var(--shadow-dialog)]',
           aiMode && 'min-h-[220px]',
         )}
       >
@@ -481,7 +485,7 @@ function CommandRow({ command, selected, onHover, onSelect }: CommandRowProps) {
       data-selected={selected}
       className={cn(
         'mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center justify-between rounded-md border-0 bg-transparent px-3 py-1.5 text-left transition-colors',
-        selected ? 'bg-accent' : 'hover:bg-secondary',
+        selected ? 'bg-[var(--accent-blue-light)] shadow-[inset_2px_0_0_var(--accent-blue)]' : 'hover:bg-secondary',
       )}
       onClick={onSelect}
       onMouseEnter={onHover}
