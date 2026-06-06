@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Sidebar } from './components/Sidebar'
+import { GraphOverlay } from './components/graph/GraphOverlay'
 import { NoteList } from './components/NoteList'
 import { Editor } from './components/Editor'
 import { ResizeHandle } from './components/ResizeHandle'
@@ -171,6 +172,17 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
       try { localStorage.setItem(SIDEBAR_RAIL_STORAGE_KEY, next ? '1' : '0') } catch { /* storage unavailable */ }
       return next
     })
+  }, [])
+  const [graphOpen, setGraphOpen] = useState(false)
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && (event.key === 'G' || event.key === 'g')) {
+        event.preventDefault()
+        setGraphOpen((open) => !open)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
   const [selection, setSelection] = useState<SidebarSelection>(DEFAULT_SELECTION)
   const [noteListFilter, setNoteListFilter] = useState<NoteListFilter>('open')
@@ -1583,15 +1595,29 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           {sidebarVisible && (
             <>
               <div className={`app__sidebar${sidebarRail ? ' app__sidebar--rail' : ''}`} style={{ width: sidebarRail ? 56 : layout.sidebarWidth }}>
-                <button
-                  type="button"
-                  className="sidebar-rail-toggle"
-                  aria-label={sidebarRail ? 'Expand sidebar' : 'Collapse sidebar to icons'}
-                  title={sidebarRail ? 'Expand sidebar' : 'Collapse to icons'}
-                  onClick={toggleSidebarRail}
-                >
-                  {sidebarRail ? '»' : '«'}
-                </button>
+                <div className="sidebar-rail-controls">
+                  <button
+                    type="button"
+                    className="sidebar-rail-toggle"
+                    aria-label="Open graph"
+                    title="Graph (⌘⇧G)"
+                    onClick={() => setGraphOpen(true)}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="6" cy="6" r="2.1" /><circle cx="18" cy="9" r="2.1" /><circle cx="9" cy="18" r="2.1" />
+                      <path d="M7.7 7.1 16 8.6M7.9 16.3 8.9 9.1M16.1 10.8 10.5 16.4" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="sidebar-rail-toggle"
+                    aria-label={sidebarRail ? 'Expand sidebar' : 'Collapse sidebar to icons'}
+                    title={sidebarRail ? 'Expand sidebar' : 'Collapse to icons'}
+                    onClick={toggleSidebarRail}
+                  >
+                    {sidebarRail ? '»' : '«'}
+                  </button>
+                </div>
                 <Sidebar entries={visibleEntries} folders={vault.folders} views={vault.views} selection={effectiveSelection} onSelect={handleSetSelection} onSelectNote={notes.handleSelectNote} onSelectFavorite={handleOpenFavorite} onReorderFavorites={entryActions.handleReorderFavorites} onCreateType={notes.handleCreateNoteImmediate} onCreateNewType={dialogs.openCreateType} onCustomizeType={entryActions.handleCustomizeType} onUpdateTypeTemplate={entryActions.handleUpdateTypeTemplate} onReorderSections={entryActions.handleReorderSections} onRenameSection={entryActions.handleRenameSection} onDeleteType={handleDeleteType} onToggleTypeVisibility={entryActions.handleToggleTypeVisibility} onCreateFolder={handleCreateFolder} onRenameFolder={folderActions.renameFolder} onDeleteFolder={folderActions.requestDeleteFolder} folderFileActions={fileActions.folderActions} renamingFolderPath={folderActions.renamingFolderPath} onStartRenameFolder={folderActions.startFolderRename} onCancelRenameFolder={folderActions.cancelFolderRename} onCreateView={dialogs.openCreateView} onEditView={handleEditView} onDeleteView={handleDeleteView} onUpdateViewDefinition={handleSidebarUpdateViewDefinition} onReorderViews={canReorderSavedViews ? viewOrdering.onReorderViews : undefined} showInbox={explicitOrganizationEnabled} inboxCount={inboxCount} allNotesFileVisibility={allNotesFileVisibility} pluralizeTypeLabels={settings.sidebar_type_pluralization_enabled ?? true} onCollapse={handleCollapseSidebar} onGoBack={handleGoBack} onGoForward={handleGoForward} canGoBack={canGoBack} canGoForward={canGoForward} locale={appLocale} loading={isVaultContentLoading} vaultRootPath={resolvedPath} workspaceOrder={vaultWorkspaceOrder} />
               </div>
               <ResizeHandle onResize={layout.handleSidebarResize} />
@@ -1716,6 +1742,13 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           onClose={dialogs.closeCommandPalette}
         />
         <SearchPanel open={dialogs.showSearch} vaultPath={resolvedPath} entries={visibleEntries} onSelectNote={notes.handleSelectNote} onClose={dialogs.closeSearch} />
+        {graphOpen && (
+          <GraphOverlay
+            entries={visibleEntries}
+            onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
+            onClose={() => setGraphOpen(false)}
+          />
+        )}
         <CreateTypeDialog open={dialogs.showCreateTypeDialog} onClose={dialogs.closeCreateType} onCreate={handleCreateType} />
         <NoteRetargetingDialogs
           dialogState={noteRetargetingUi.dialogState}

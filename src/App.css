@@ -48,11 +48,21 @@
   padding-right: 0 !important;
 }
 
-.sidebar-rail-toggle {
+.sidebar-rail-controls {
   position: absolute;
   top: 6px;
   right: 6px;
   z-index: 30;
+  display: flex;
+  gap: 2px;
+}
+.app__sidebar--rail .sidebar-rail-controls {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+}
+.sidebar-rail-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,11 +79,6 @@
 .sidebar-rail-toggle:hover {
   background: var(--state-hover);
   color: var(--text-primary);
-}
-.app__sidebar--rail .sidebar-rail-toggle {
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .app__sidebar > * {
