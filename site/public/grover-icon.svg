@@ -1,10 +1,14 @@
-<svg width="266" height="363" viewBox="0 0 266 363" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_111_151)">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M119.524 5.31219C126.607 -1.77073 138.117 -1.77073 145.2 5.31219C178.844 40.7268 265.61 147.856 265.61 230.195C265.61 303.68 206.29 363 132.805 363C59.3195 363 0 303.68 0 230.195C0 147.856 86.7659 40.7268 119.524 5.31219ZM59.5947 242.88C58.1619 234.744 50.3952 229.074 42.2195 230.195C34.0438 231.316 28.5932 238.799 30.0259 246.935C37.6847 290.425 72.2734 325.622 116.094 334.485C117.821 334.836 119.552 334.864 121.178 334.641C127.269 333.806 132.289 329.26 133.371 322.934C134.756 314.893 129.25 307.054 121.086 305.401C89.7767 299.057 65.0615 273.923 59.5947 242.88Z" fill="#155DFF"/>
-</g>
-<defs>
-<clipPath id="clip0_111_151">
-<rect width="266" height="363" fill="white"/>
-</clipPath>
-</defs>
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="groverBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0C6B43"/>
+      <stop offset="1" stop-color="#03311F"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="184" fill="url(#groverBg)"/>
+  <g transform="translate(512,524) scale(20) translate(-32,-29.5)">
+    <path d="M32 48 V25.5" fill="none" stroke="#EAF6EF" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M31 34 C21 33 16 25 17 15 C27 15 32 24 31 34 Z" fill="#EAF6EF" opacity="0.88"/>
+    <path d="M33 30 C43 29 48 21 47 11 C37 11 32 20 33 30 Z" fill="#EAF6EF"/>
+  </g>
 </svg>
