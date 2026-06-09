@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { VaultEntry } from '../../types'
 import { buildGraphData } from './graphData'
+import { DEFAULT_GRAPH_PARAMS, type GraphParams } from './graphParams'
 
 interface GraphViewProps {
   entries: VaultEntry[]
   onOpenNote: (path: string) => void
+  params?: GraphParams
 }
 
 interface SimNode {
@@ -22,13 +24,12 @@ function cssColor(el: HTMLElement, name: string, fallback: string): string {
   return value || fallback
 }
 
-function nodeRadius(degree: number): number {
-  return Math.min(4 + degree * 0.7, 16)
+function baseRadius(degree: number): number {
+  return Math.min(3.5 + degree * 0.7, 16)
 }
 
-/** Runs one physics tick of a small force-directed layout (repulsion + springs + gravity). */
-function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number): void {
-  const repulsion = 1400
+function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p: GraphParams): void {
+  const repulsion = 1400 * p.repelForce
   for (let i = 0; i < nodes.length; i++) {
     const a = nodes[i]
     for (let j = i + 1; j < nodes.length; j++) {
@@ -39,21 +40,18 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number): 
       if (distSq < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; distSq = 0.01 }
       const dist = Math.sqrt(distSq)
       const force = (repulsion / distSq) * alpha
-      a.vx += (dx / dist) * force
-      a.vy += (dy / dist) * force
-      b.vx -= (dx / dist) * force
-      b.vy -= (dy / dist) * force
+      a.vx += (dx / dist) * force; a.vy += (dy / dist) * force
+      b.vx -= (dx / dist) * force; b.vy -= (dy / dist) * force
     }
   }
 
-  const idealLength = 70
   for (const [s, t] of links) {
     const a = nodes[s]
     const b = nodes[t]
     const dx = b.x - a.x
     const dy = b.y - a.y
     const dist = Math.sqrt(dx * dx + dy * dy) || 0.01
-    const force = (dist - idealLength) * 0.03 * alpha
+    const force = (dist - p.linkDistance) * 0.03 * p.linkForce * alpha
     const fx = (dx / dist) * force
     const fy = (dy / dist) * force
     a.vx += fx; a.vy += fy
@@ -61,8 +59,8 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number): 
   }
 
   for (const node of nodes) {
-    node.vx -= node.x * 0.012 * alpha
-    node.vy -= node.y * 0.012 * alpha
+    node.vx -= node.x * 0.024 * p.centerForce * alpha
+    node.vy -= node.y * 0.024 * p.centerForce * alpha
     node.x += node.vx
     node.y += node.vy
     node.vx *= 0.82
@@ -70,12 +68,14 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number): 
   }
 }
 
-export function GraphView({ entries, onOpenNote }: GraphViewProps) {
+export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }: GraphViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const data = useMemo(() => buildGraphData(entries), [entries])
   const onOpenRef = useRef(onOpenNote)
   onOpenRef.current = onOpenNote
+  const paramsRef = useRef(params)
+  paramsRef.current = params
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -86,18 +86,18 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
 
     const colors = {
       node: cssColor(wrap, '--accent-blue', '#5FC98C'),
-      edge: cssColor(wrap, '--border-strong', '#46433B'),
+      edge: cssColor(wrap, '--text-primary', '#E6E1D8'),
       text: cssColor(wrap, '--text-secondary', '#B8B1A6'),
       hi: cssColor(wrap, '--accent-blue-hover', '#84DBA8'),
     }
 
-    const radius = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.4 + 1
+    const spread = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.4 + 1
     const nodes: SimNode[] = data.nodes.map((node, index) => {
       const angle = (index / Math.max(data.nodes.length, 1)) * Math.PI * 2
       return {
         id: node.id, label: node.label, degree: node.degree,
-        x: Math.cos(angle) * radius * (0.3 + Math.random() * 0.7),
-        y: Math.sin(angle) * radius * (0.3 + Math.random() * 0.7),
+        x: Math.cos(angle) * spread * (0.3 + Math.random() * 0.7),
+        y: Math.sin(angle) * spread * (0.3 + Math.random() * 0.7),
         vx: 0, vy: 0,
       }
     })
@@ -107,7 +107,7 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
       .filter((pair): pair is [number, number] => pair[0] !== undefined && pair[1] !== undefined)
 
     let alpha = 1
-    for (let i = 0; i < 120; i++) { tick(nodes, links, alpha); alpha *= 0.985 }
+    for (let i = 0; i < 140; i++) { tick(nodes, links, alpha, paramsRef.current); alpha *= 0.985 }
 
     const camera = { scale: 1, x: 0, y: 0 }
     let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity
@@ -125,8 +125,7 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
     resize()
     if (nodes.length > 0) {
       const w = wrap.clientWidth, h = wrap.clientHeight
-      const gw = (bx1 - bx0) || 1, gh = (by1 - by0) || 1
-      camera.scale = Math.min(w / (gw + 120), h / (gh + 120), 1.4)
+      camera.scale = Math.min(w / ((bx1 - bx0) + 140), h / ((by1 - by0) + 140), 1.4)
       camera.x = w / 2 - ((bx0 + bx1) / 2) * camera.scale
       camera.y = h / 2 - ((by0 + by1) / 2) * camera.scale
     }
@@ -135,10 +134,11 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
     const toWorld = (sx: number, sy: number) => ({ x: (sx - camera.x) / camera.scale, y: (sy - camera.y) / camera.scale })
 
     function render() {
+      const p = paramsRef.current
       ctx!.clearRect(0, 0, wrap!.clientWidth, wrap!.clientHeight)
-      ctx!.lineWidth = 1
+      ctx!.lineWidth = p.linkThickness
       ctx!.strokeStyle = colors.edge
-      ctx!.globalAlpha = 0.5
+      ctx!.globalAlpha = 0.55
       for (const [s, t] of links) {
         const a = toScreen(nodes[s].x, nodes[s].y)
         const b = toScreen(nodes[t].x, nodes[t].y)
@@ -146,25 +146,29 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
       }
       ctx!.globalAlpha = 1
       for (const node of nodes) {
-        const p = toScreen(node.x, node.y)
-        const r = Math.max(nodeRadius(node.degree) * camera.scale, 2)
-        ctx!.beginPath(); ctx!.arc(p.x, p.y, r, 0, Math.PI * 2)
+        const screen = toScreen(node.x, node.y)
+        const r = Math.max(baseRadius(node.degree) * p.nodeSize * camera.scale, 2)
+        ctx!.beginPath(); ctx!.arc(screen.x, screen.y, r, 0, Math.PI * 2)
         ctx!.fillStyle = node === hovered ? colors.hi : colors.node
         ctx!.fill()
-        const showLabel = node === hovered || (camera.scale > 0.9 && node.degree >= 3)
-        if (showLabel) {
-          ctx!.fillStyle = colors.text
+        if ((p.showLabels || node === hovered) && camera.scale > 0.22) {
+          ctx!.fillStyle = node === hovered ? colors.edge : colors.text
           ctx!.font = '11px ui-sans-serif, system-ui, sans-serif'
           ctx!.textAlign = 'center'
-          ctx!.fillText(node.label.slice(0, 28), p.x, p.y - r - 4)
+          ctx!.fillText(node.label.slice(0, 26), screen.x, screen.y + r + 12)
         }
       }
     }
 
-    let settleTicks = 60
+    let alphaLive = 0.04
+    let lastForceKey = ''
     let raf = 0
     function frame() {
-      if (settleTicks > 0) { tick(nodes, links, 0.05); settleTicks-- }
+      const p = paramsRef.current
+      const forceKey = `${p.centerForce}|${p.repelForce}|${p.linkForce}|${p.linkDistance}`
+      if (forceKey !== lastForceKey) { lastForceKey = forceKey; alphaLive = 0.5 }
+      tick(nodes, links, Math.max(alphaLive, 0.02), p)
+      alphaLive *= 0.96
       render()
       raf = requestAnimationFrame(frame)
     }
@@ -177,7 +181,7 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
       for (const node of nodes) {
         const dx = node.x - world.x, dy = node.y - world.y
         const d = dx * dx + dy * dy
-        const hitR = (nodeRadius(node.degree) + 6) / camera.scale
+        const hitR = (baseRadius(node.degree) * paramsRef.current.nodeSize + 6) / camera.scale
         if (d < hitR * hitR && d < bestDist) { best = node; bestDist = d }
       }
       return best
@@ -211,8 +215,7 @@ export function GraphView({ entries, onOpenNote }: GraphViewProps) {
       const rect = canvas!.getBoundingClientRect()
       const sx = e.clientX - rect.left, sy = e.clientY - rect.top
       const before = toWorld(sx, sy)
-      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1
-      camera.scale = Math.max(0.15, Math.min(4, camera.scale * factor))
+      camera.scale = Math.max(0.15, Math.min(4, camera.scale * (e.deltaY < 0 ? 1.1 : 1 / 1.1)))
       const after = toWorld(sx, sy)
       camera.x += (after.x - before.x) * camera.scale
       camera.y += (after.y - before.y) * camera.scale

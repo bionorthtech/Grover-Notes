@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Sidebar } from './components/Sidebar'
-import { GraphOverlay } from './components/graph/GraphOverlay'
+import { GraphPane } from './components/graph/GraphPane'
 import { NoteList } from './components/NoteList'
 import { Editor } from './components/Editor'
 import { ResizeHandle } from './components/ResizeHandle'
@@ -1623,6 +1623,14 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
               <ResizeHandle onResize={layout.handleSidebarResize} />
             </>
           )}
+          {graphOpen ? (
+            <GraphPane
+              entries={visibleEntries}
+              onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
+              onClose={() => setGraphOpen(false)}
+            />
+          ) : (
+          <>
           {noteListVisible && (
             <>
               <div className={`app__note-list${aiActivity.highlightElement === 'notelist' ? ' ai-highlight' : ''}`} style={{ width: layout.noteListWidth }}>
@@ -1712,6 +1720,8 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
               locale={appLocale}
             />
           </div>
+          </>
+          )}
         </div>
         <UpdateBanner status={updateStatus} actions={updateActions} locale={appLocale} />
         <RenameDetectedBanner renames={detectedRenames} onUpdate={handleUpdateWikilinks} onDismiss={handleDismissRenames} />
@@ -1742,13 +1752,6 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           onClose={dialogs.closeCommandPalette}
         />
         <SearchPanel open={dialogs.showSearch} vaultPath={resolvedPath} entries={visibleEntries} onSelectNote={notes.handleSelectNote} onClose={dialogs.closeSearch} />
-        {graphOpen && (
-          <GraphOverlay
-            entries={visibleEntries}
-            onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
-            onClose={() => setGraphOpen(false)}
-          />
-        )}
         <CreateTypeDialog open={dialogs.showCreateTypeDialog} onClose={dialogs.closeCreateType} onCreate={handleCreateType} />
         <NoteRetargetingDialogs
           dialogState={noteRetargetingUi.dialogState}
