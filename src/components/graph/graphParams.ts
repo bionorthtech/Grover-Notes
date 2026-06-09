@@ -6,6 +6,8 @@ export interface GraphParams {
   nodeSize: number
   linkThickness: number
   showLabels: boolean
+  /** 0..1 — how aggressively labels fade out while zoomed out (Obsidian's "text fade threshold"). */
+  textFade: number
 }
 
 export const DEFAULT_GRAPH_PARAMS: GraphParams = {
@@ -16,4 +18,5 @@ export const DEFAULT_GRAPH_PARAMS: GraphParams = {
   nodeSize: 1.4,
   linkThickness: 2,
   showLabels: true,
+  textFade: 0.5,
 }

@@ -7,6 +7,8 @@ interface GraphViewProps {
   entries: VaultEntry[]
   onOpenNote: (path: string) => void
   params?: GraphParams
+  /** Bump to re-seed and re-settle the layout (the settings panel "refresh" button). */
+  relayoutNonce?: number
 }
 
 interface SimNode {
@@ -17,6 +19,7 @@ interface SimNode {
   y: number
   vx: number
   vy: number
+  pinned: boolean
 }
 
 function cssColor(el: HTMLElement, name: string, fallback: string): string {
@@ -26,6 +29,13 @@ function cssColor(el: HTMLElement, name: string, fallback: string): string {
 
 function baseRadius(degree: number): number {
   return Math.min(3.5 + degree * 0.7, 16)
+}
+
+/** Smoothly maps the camera scale to label opacity given the fade threshold. */
+export function labelAlpha(scale: number, textFade: number): number {
+  const cutoff = 0.25 + textFade * 0.85
+  const t = (scale - cutoff) / 0.25
+  return Math.max(0, Math.min(1, t))
 }
 
 function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p: GraphParams): void {
@@ -59,6 +69,7 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p
   }
 
   for (const node of nodes) {
+    if (node.pinned) { node.vx = 0; node.vy = 0; continue }
     node.vx -= node.x * 0.024 * p.centerForce * alpha
     node.vy -= node.y * 0.024 * p.centerForce * alpha
     node.x += node.vx
@@ -68,7 +79,7 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p
   }
 }
 
-export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }: GraphViewProps) {
+export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, relayoutNonce = 0 }: GraphViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const data = useMemo(() => buildGraphData(entries), [entries])
@@ -98,13 +109,20 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
         id: node.id, label: node.label, degree: node.degree,
         x: Math.cos(angle) * spread * (0.3 + Math.random() * 0.7),
         y: Math.sin(angle) * spread * (0.3 + Math.random() * 0.7),
-        vx: 0, vy: 0,
+        vx: 0, vy: 0, pinned: false,
       }
     })
     const indexById = new Map(nodes.map((node, i) => [node.id, i]))
     const links: Array<[number, number]> = data.edges
       .map((edge) => [indexById.get(edge.source), indexById.get(edge.target)] as [number | undefined, number | undefined])
       .filter((pair): pair is [number, number] => pair[0] !== undefined && pair[1] !== undefined)
+    const neighborSets = new Map<SimNode, Set<SimNode>>()
+    for (const [s, t] of links) {
+      if (!neighborSets.has(nodes[s])) neighborSets.set(nodes[s], new Set())
+      if (!neighborSets.has(nodes[t])) neighborSets.set(nodes[t], new Set())
+      neighborSets.get(nodes[s])!.add(nodes[t])
+      neighborSets.get(nodes[t])!.add(nodes[s])
+    }
 
     let alpha = 1
     for (let i = 0; i < 140; i++) { tick(nodes, links, alpha, paramsRef.current); alpha *= 0.985 }
@@ -142,28 +160,38 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
     function render() {
       const p = paramsRef.current
       ctx!.clearRect(0, 0, wrap!.clientWidth, wrap!.clientHeight)
+      const hoverNeighbors = hovered ? neighborSets.get(hovered) : undefined
       ctx!.lineWidth = p.linkThickness
-      ctx!.strokeStyle = colors.edge
-      ctx!.globalAlpha = 0.55
       for (const [s, t] of links) {
-        const a = toScreen(nodes[s].x, nodes[s].y)
-        const b = toScreen(nodes[t].x, nodes[t].y)
-        ctx!.beginPath(); ctx!.moveTo(a.x, a.y); ctx!.lineTo(b.x, b.y); ctx!.stroke()
+        const a = nodes[s]
+        const b = nodes[t]
+        const sa = toScreen(a.x, a.y)
+        const sb = toScreen(b.x, b.y)
+        const touchesHover = hovered !== null && (a === hovered || b === hovered)
+        ctx!.strokeStyle = touchesHover ? colors.hi : colors.edge
+        ctx!.globalAlpha = hovered ? (touchesHover ? 0.9 : 0.14) : 0.55
+        ctx!.beginPath(); ctx!.moveTo(sa.x, sa.y); ctx!.lineTo(sb.x, sb.y); ctx!.stroke()
       }
-      ctx!.globalAlpha = 1
+      const fade = labelAlpha(camera.scale, p.textFade)
       for (const node of nodes) {
         const screen = toScreen(node.x, node.y)
         const r = Math.max(baseRadius(node.degree) * p.nodeSize * camera.scale, 2)
+        const isHover = node === hovered
+        const isNeighbor = hoverNeighbors?.has(node) ?? false
+        ctx!.globalAlpha = hovered && !isHover && !isNeighbor ? 0.3 : 1
         ctx!.beginPath(); ctx!.arc(screen.x, screen.y, r, 0, Math.PI * 2)
-        ctx!.fillStyle = node === hovered ? colors.hi : colors.node
+        ctx!.fillStyle = isHover ? colors.hi : colors.node
         ctx!.fill()
-        if ((p.showLabels || node === hovered) && camera.scale > 0.22) {
-          ctx!.fillStyle = node === hovered ? colors.edge : colors.text
+        const a = isHover ? 1 : (p.showLabels ? fade : 0)
+        if (a > 0.02) {
+          ctx!.globalAlpha = hovered && !isHover && !isNeighbor ? a * 0.3 : a
+          ctx!.fillStyle = isHover ? colors.edge : colors.text
           ctx!.font = '11px ui-sans-serif, system-ui, sans-serif'
           ctx!.textAlign = 'center'
           ctx!.fillText(node.label.slice(0, 26), screen.x, screen.y + r + 12)
         }
       }
+      ctx!.globalAlpha = 1
     }
 
     let alphaLive = 0.04
@@ -193,13 +221,25 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
       return best
     }
 
-    let dragging = false
+    let panning = false
+    let dragNode: SimNode | null = null
     let moved = false
     let lastX = 0, lastY = 0
-    function pointerDown(e: PointerEvent) { dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY; canvas!.setPointerCapture(e.pointerId) }
+    function pointerDown(e: PointerEvent) {
+      const rect = canvas!.getBoundingClientRect()
+      moved = false
+      lastX = e.clientX; lastY = e.clientY
+      canvas!.setPointerCapture(e.pointerId)
+      const hit = nodeAt(e.clientX - rect.left, e.clientY - rect.top)
+      if (hit) { dragNode = hit; hit.pinned = true } else { panning = true }
+    }
     function pointerMove(e: PointerEvent) {
       const rect = canvas!.getBoundingClientRect()
-      if (dragging) {
+      if (dragNode) {
+        const world = toWorld(e.clientX - rect.left, e.clientY - rect.top)
+        if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 2) { moved = true; userInteracted = true; alphaLive = 0.3 }
+        dragNode.x = world.x; dragNode.y = world.y
+      } else if (panning) {
         const dx = e.clientX - lastX, dy = e.clientY - lastY
         if (Math.abs(dx) + Math.abs(dy) > 2) { moved = true; userInteracted = true }
         camera.x += dx; camera.y += dy; lastX = e.clientX; lastY = e.clientY
@@ -208,13 +248,13 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
         if (next !== hovered) { hovered = next; canvas!.style.cursor = next ? 'pointer' : 'grab' }
       }
     }
-    function pointerUp(e: PointerEvent) {
-      const rect = canvas!.getBoundingClientRect()
-      if (dragging && !moved) {
-        const hit = nodeAt(e.clientX - rect.left, e.clientY - rect.top)
-        if (hit) onOpenRef.current(hit.id)
+    function pointerUp() {
+      if (dragNode) {
+        if (!moved) onOpenRef.current(dragNode.id)
+        dragNode.pinned = false
+        dragNode = null
       }
-      dragging = false
+      panning = false
     }
     function wheel(e: WheelEvent) {
       e.preventDefault()
@@ -245,7 +285,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
       canvas.removeEventListener('wheel', wheel)
       resizeObserver.disconnect()
     }
-  }, [data])
+  }, [data, relayoutNonce])
 
   return (
     <div ref={wrapRef} className="relative h-full w-full overflow-hidden">

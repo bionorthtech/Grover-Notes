@@ -44,6 +44,7 @@ interface NoteCommandsConfig {
   canRestoreDeletedNote?: boolean
   locale?: AppLocale
   onExportNoteAsPdf?: () => void
+  onExtractHighlights?: () => void
 }
 
 interface NoteCommandConfig {
@@ -297,6 +298,13 @@ function buildFileActionCommands(config: NoteCommandsConfig): CommandAction[] {
       keywords: ['export', 'pdf', 'print', 'share', 'archive'],
       enabled: config.hasActiveNote && activeFileKind === 'markdown' && !!config.onExportNoteAsPdf,
       execute: () => config.onExportNoteAsPdf?.(),
+    }),
+    createNoteCommand({
+      id: 'extract-highlights',
+      label: 'Extract highlights to clipboard',
+      keywords: ['highlight', 'highlights', 'extract', 'copy', 'marker', 'clipboard'],
+      enabled: config.hasActiveNote && activeFileKind === 'markdown' && !!config.onExtractHighlights,
+      execute: () => config.onExtractHighlights?.(),
     }),
     buildActivePathCommand(config, {
       id: 'open-active-file-external',
