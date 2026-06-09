@@ -110,9 +110,18 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
     for (let i = 0; i < 140; i++) { tick(nodes, links, alpha, paramsRef.current); alpha *= 0.985 }
 
     const camera = { scale: 1, x: 0, y: 0 }
-    let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity
-    for (const node of nodes) { bx0 = Math.min(bx0, node.x); by0 = Math.min(by0, node.y); bx1 = Math.max(bx1, node.x); by1 = Math.max(by1, node.y) }
     let hovered: SimNode | null = null
+    let userInteracted = false
+
+    function fitCamera() {
+      if (nodes.length === 0) return
+      let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity
+      for (const node of nodes) { bx0 = Math.min(bx0, node.x); by0 = Math.min(by0, node.y); bx1 = Math.max(bx1, node.x); by1 = Math.max(by1, node.y) }
+      const w = wrap!.clientWidth, h = wrap!.clientHeight
+      camera.scale = Math.min(w / ((bx1 - bx0) + 160), h / ((by1 - by0) + 160), 1.4)
+      camera.x = w / 2 - ((bx0 + bx1) / 2) * camera.scale
+      camera.y = h / 2 - ((by0 + by1) / 2) * camera.scale
+    }
 
     function resize() {
       const dpr = window.devicePixelRatio || 1
@@ -121,14 +130,11 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
       canvas!.style.width = `${wrap!.clientWidth}px`
       canvas!.style.height = `${wrap!.clientHeight}px`
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
+      if (!userInteracted) fitCamera()
     }
     resize()
-    if (nodes.length > 0) {
-      const w = wrap.clientWidth, h = wrap.clientHeight
-      camera.scale = Math.min(w / ((bx1 - bx0) + 140), h / ((by1 - by0) + 140), 1.4)
-      camera.x = w / 2 - ((bx0 + bx1) / 2) * camera.scale
-      camera.y = h / 2 - ((by0 + by1) / 2) * camera.scale
-    }
+    fitCamera()
+    const refitTimer = window.setTimeout(() => { if (!userInteracted) fitCamera() }, 450)
 
     const toScreen = (x: number, y: number) => ({ x: x * camera.scale + camera.x, y: y * camera.scale + camera.y })
     const toWorld = (sx: number, sy: number) => ({ x: (sx - camera.x) / camera.scale, y: (sy - camera.y) / camera.scale })
@@ -195,7 +201,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
       const rect = canvas!.getBoundingClientRect()
       if (dragging) {
         const dx = e.clientX - lastX, dy = e.clientY - lastY
-        if (Math.abs(dx) + Math.abs(dy) > 2) moved = true
+        if (Math.abs(dx) + Math.abs(dy) > 2) { moved = true; userInteracted = true }
         camera.x += dx; camera.y += dy; lastX = e.clientX; lastY = e.clientY
       } else {
         const next = nodeAt(e.clientX - rect.left, e.clientY - rect.top)
@@ -212,6 +218,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
     }
     function wheel(e: WheelEvent) {
       e.preventDefault()
+      userInteracted = true
       const rect = canvas!.getBoundingClientRect()
       const sx = e.clientX - rect.left, sy = e.clientY - rect.top
       const before = toWorld(sx, sy)
@@ -231,6 +238,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS }
 
     return () => {
       cancelAnimationFrame(raf)
+      window.clearTimeout(refitTimer)
       canvas.removeEventListener('pointerdown', pointerDown)
       canvas.removeEventListener('pointermove', pointerMove)
       canvas.removeEventListener('pointerup', pointerUp)
