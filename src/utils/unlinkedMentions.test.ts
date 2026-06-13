@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findUnlinkedMentions, linkMention, type LinkTarget } from './unlinkedMentions'
+import { buildLinkTargets, findUnlinkedMentions, linkMention, type LinkTarget } from './unlinkedMentions'
 
 const targets: LinkTarget[] = [
   { path: '/v/alice.md', displayName: 'Alice', names: ['Alice', 'Ali'] },
@@ -40,6 +40,20 @@ describe('findUnlinkedMentions', () => {
   it('returns nothing for empty input', () => {
     expect(findUnlinkedMentions('', targets)).toEqual([])
     expect(findUnlinkedMentions('hello', [])).toEqual([])
+  })
+})
+
+describe('buildLinkTargets', () => {
+  const entries = [
+    { path: '/v/self.md', title: 'Self', aliases: [], archived: false },
+    { path: '/v/alice.md', title: 'Alice', aliases: ['Ali'], archived: false },
+    { path: '/v/old.md', title: 'Old', aliases: [], archived: true },
+    { path: '/v/untitled.md', title: '  ', aliases: [], archived: false },
+  ]
+
+  it('includes other titled, non-archived notes with their aliases', () => {
+    const targets = buildLinkTargets(entries, '/v/self.md')
+    expect(targets).toEqual([{ path: '/v/alice.md', displayName: 'Alice', names: ['Alice', 'Ali'] }])
   })
 })
 

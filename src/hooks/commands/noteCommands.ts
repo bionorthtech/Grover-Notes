@@ -45,6 +45,7 @@ interface NoteCommandsConfig {
   locale?: AppLocale
   onExportNoteAsPdf?: () => void
   onExtractHighlights?: () => void
+  onSuggestLinks?: () => void
 }
 
 interface NoteCommandConfig {
@@ -305,6 +306,13 @@ function buildFileActionCommands(config: NoteCommandsConfig): CommandAction[] {
       keywords: ['highlight', 'highlights', 'extract', 'copy', 'marker', 'clipboard'],
       enabled: config.hasActiveNote && activeFileKind === 'markdown' && !!config.onExtractHighlights,
       execute: () => config.onExtractHighlights?.(),
+    }),
+    createNoteCommand({
+      id: 'suggest-links',
+      label: 'Suggest links for this note',
+      keywords: ['link', 'links', 'suggest', 'wikilink', 'mention', 'related', 'connect'],
+      enabled: config.hasActiveNote && activeFileKind === 'markdown' && !!config.onSuggestLinks,
+      execute: () => config.onSuggestLinks?.(),
     }),
     buildActivePathCommand(config, {
       id: 'open-active-file-external',

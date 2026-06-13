@@ -19,6 +19,7 @@ import { AiWorkspaceWindowApp } from './components/AiWorkspaceWindowApp'
 import { SettingsPanel } from './components/SettingsPanel'
 import { CloneVaultModal } from './components/CloneVaultModal'
 import { FeedbackDialog } from './components/FeedbackDialog'
+import { SuggestLinksDialog } from './components/SuggestLinksDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -38,6 +39,7 @@ import { useAppCommands } from './hooks/useAppCommands'
 import { triggerCommitEntryAction } from './utils/commitEntryAction'
 import { generateCommitMessage } from './utils/commitMessage'
 import { useDialogs } from './hooks/useDialogs'
+import { useSuggestLinks } from './hooks/useSuggestLinks'
 import { useVaultSwitcher } from './hooks/useVaultSwitcher'
 import { useGitHistory } from './hooks/useGitHistory'
 import { useUpdater, restartApp } from './hooks/useUpdater'
@@ -550,6 +552,20 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
   } = notes
   const noteActiveTabPath = notes.activeTabPath
   const noteActiveTabPathRef = notes.activeTabPathRef
+  // Snapshot of the active note, refreshed every render so the (stable) getters
+  // below always read current content regardless of command memoization.
+  const activeNoteSourceRef = useRef<{ entry: VaultEntry | null; body: string }>({ entry: null, body: '' })
+  useEffect(() => {
+    const tab = notes.tabs.find((t) => t.entry.path === notes.activeTabPath)
+    activeNoteSourceRef.current = { entry: tab?.entry ?? null, body: tab?.content ?? '' }
+  })
+  const suggestLinks = useSuggestLinks({
+    entries: visibleEntries,
+    getActiveEntry: useCallback(() => activeNoteSourceRef.current.entry, []),
+    getActiveBody: useCallback(() => activeNoteSourceRef.current.body, []),
+    updateFrontmatter: notes.handleUpdateFrontmatter,
+    toast: setToastMessage,
+  })
   useNoteWindowLifecycle({
     activeTabPath: notes.activeTabPath,
     handleSelectNote,
@@ -1441,6 +1457,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onToggleRawEditor: toggleRawEditorCommand,
     onToggleTableOfContents: toggleTableOfContentsCommand,
     onExportNoteAsPdf: activeDeletedFile ? undefined : exportNotePdfCommand,
+    onSuggestLinks: activeDeletedFile ? undefined : suggestLinks.requestSuggestLinks,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
     onSetNoteWidth: handleSetActiveNoteWidth,
@@ -1789,6 +1806,13 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         />
         <SettingsPanel open={dialogs.showSettings} initialSectionId={settingsInitialSectionId} settings={settings} aiAgentsStatus={aiAgentsStatus} locale={appLocale} systemLocale={systemLocale} vaults={vaultSwitcher.allVaults} defaultWorkspacePath={vaultSwitcher.defaultWorkspacePath} onSetDefaultWorkspace={vaultSwitcher.setDefaultWorkspace} onRemoveVault={vaultSwitcher.removeVault} onReorderVaults={vaultSwitcher.reorderVaults} onUpdateWorkspaceIdentity={vaultSwitcher.updateWorkspaceIdentity} isGitVault={gitRepoState !== 'missing'} onSave={saveSettings} onCopyMcpConfig={mcpSetupDialog.copyManualConfig} explicitOrganizationEnabled={explicitOrganizationEnabled} onSaveExplicitOrganization={handleSaveExplicitOrganization} onClose={dialogs.closeSettings} />
         <FeedbackDialog open={showFeedback} onClose={closeFeedback} />
+        <SuggestLinksDialog
+          open={suggestLinks.open}
+          noteTitle={suggestLinks.noteTitle}
+          mentions={suggestLinks.mentions}
+          onConfirm={suggestLinks.confirm}
+          onCancel={suggestLinks.cancel}
+        />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />
         {deleteActions.confirmDelete && (

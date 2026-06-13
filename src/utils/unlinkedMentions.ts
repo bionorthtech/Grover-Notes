@@ -88,3 +88,28 @@ export function linkMention(body: string, mention: UnlinkedMention): string {
   const replacement = matchedText === displayName ? `[[${displayName}]]` : `[[${displayName}|${matchedText}]]`
   return body.slice(0, index) + replacement + body.slice(index + matchedText.length)
 }
+
+interface LinkTargetEntry {
+  path: string
+  title: string
+  aliases: string[]
+  archived: boolean
+}
+
+/**
+ * Builds the set of link targets to scan a note's body against: every other
+ * non-archived note that has a title, matched by title + aliases. The active
+ * note is excluded so a note never links to itself.
+ */
+export function buildLinkTargets(entries: LinkTargetEntry[], activePath: string): LinkTarget[] {
+  const targets: LinkTarget[] = []
+  for (const entry of entries) {
+    if (entry.path === activePath || entry.archived) continue
+    const title = entry.title.trim()
+    if (!title) continue
+    const names = [title, ...entry.aliases.map((a) => a.trim()).filter(Boolean)]
+    targets.push({ path: entry.path, displayName: title, names })
+  }
+  return targets
+}
+

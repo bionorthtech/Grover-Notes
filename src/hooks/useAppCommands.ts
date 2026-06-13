@@ -126,6 +126,7 @@ interface AppCommandsConfig {
   onCopyActiveDeepLink?: (path: string) => void
   onOpenActiveFileExternal?: (path: string) => void
   onExportNoteAsPdf?: () => void
+  onSuggestLinks?: () => void
   onRevealSelectedFolder?: () => void
   onCopySelectedFolderPath?: () => void
   onToggleFavorite?: (path: string) => void
@@ -261,6 +262,7 @@ type CommandRegistryNoteActions = Pick<
   | 'canCustomizeNoteListColumns'
   | 'noteListColumnsLabel'
   | 'onExportNoteAsPdf'
+  | 'onSuggestLinks'
 >
 
 function aiFeaturesAreEnabled(config: Pick<AppCommandsConfig, 'aiFeaturesEnabled'>): boolean {
@@ -590,6 +592,7 @@ function createCommandRegistryNoteConfig(
     canCustomizeNoteListColumns: config.canCustomizeNoteListColumns,
     noteListColumnsLabel: config.noteListColumnsLabel,
     onExportNoteAsPdf: config.onExportNoteAsPdf,
+    onSuggestLinks: config.onSuggestLinks,
   }
 }
 
