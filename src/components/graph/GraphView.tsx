@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { VaultEntry } from '../../types'
-import { buildGraphData } from './graphData'
+import { buildGraphData, filterGraph, UNTYPED_KEY, type GraphFilter } from './graphData'
 import { DEFAULT_GRAPH_PARAMS, type GraphParams } from './graphParams'
+import { darken, labelAlpha } from './graphMath'
 
 interface GraphViewProps {
   entries: VaultEntry[]
@@ -9,11 +10,22 @@ interface GraphViewProps {
   params?: GraphParams
   /** Bump to re-seed and re-settle the layout (the settings panel "refresh" button). */
   relayoutNonce?: number
+  /** Type-hiding / local-graph filter applied to the built graph. */
+  filter?: GraphFilter
+  /** Surface unlinked notes as isolated dots. */
+  includeOrphans?: boolean
+  /** Colour nodes by their type instead of a single accent. */
+  colorByType?: boolean
+  /** Maps a node's type (or `UNTYPED_KEY`) to a CSS colour expression. */
+  typeColorExpr?: (type: string) => string
 }
+
+const NO_HIDDEN: GraphFilter = { hiddenTypes: new Set() }
 
 interface SimNode {
   id: string
   label: string
+  type: string
   degree: number
   x: number
   y: number
@@ -29,13 +41,6 @@ function cssColor(el: HTMLElement, name: string, fallback: string): string {
 
 function baseRadius(degree: number): number {
   return Math.min(3.5 + degree * 0.7, 16)
-}
-
-/** Smoothly maps the camera scale to label opacity given the fade threshold. */
-export function labelAlpha(scale: number, textFade: number): number {
-  const cutoff = 0.25 + textFade * 0.85
-  const t = (scale - cutoff) / 0.25
-  return Math.max(0, Math.min(1, t))
 }
 
 function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p: GraphParams): void {
@@ -79,14 +84,28 @@ function tick(nodes: SimNode[], links: Array<[number, number]>, alpha: number, p
   }
 }
 
-export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, relayoutNonce = 0 }: GraphViewProps) {
+export function GraphView({
+  entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, relayoutNonce = 0,
+  filter = NO_HIDDEN, includeOrphans = false, colorByType = false, typeColorExpr,
+}: GraphViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const data = useMemo(() => buildGraphData(entries), [entries])
+  const data = useMemo(
+    () => filterGraph(buildGraphData(entries, { includeOrphans }), filter),
+    [entries, includeOrphans, filter],
+  )
+  // Live values read inside the long-lived canvas effect's closures, kept in
+  // refs so prop changes don't tear down and re-seed the simulation.
   const onOpenRef = useRef(onOpenNote)
-  onOpenRef.current = onOpenNote
   const paramsRef = useRef(params)
-  paramsRef.current = params
+  const colorByTypeRef = useRef(colorByType)
+  const typeColorRef = useRef(typeColorExpr)
+  useEffect(() => {
+    onOpenRef.current = onOpenNote
+    paramsRef.current = params
+    colorByTypeRef.current = colorByType
+    typeColorRef.current = typeColorExpr
+  })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -95,18 +114,39 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    const baseGreen = darken(cssColor(wrap, '--accent-blue', '#5FC98C'), 0.42)
     const colors = {
-      node: cssColor(wrap, '--accent-blue', '#5FC98C'),
+      node: baseGreen,
       edge: cssColor(wrap, '--text-primary', '#E6E1D8'),
       text: cssColor(wrap, '--text-secondary', '#B8B1A6'),
       hi: cssColor(wrap, '--accent-blue-hover', '#84DBA8'),
+    }
+
+    // Resolve CSS colour expressions (e.g. "var(--accent-purple)") to concrete
+    // canvas colours via a throwaway probe, cached per expression.
+    const probe = document.createElement('span')
+    probe.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden'
+    wrap.appendChild(probe)
+    const resolvedCache = new Map<string, string>()
+    const resolveExpr = (expr: string): string => {
+      const cached = resolvedCache.get(expr)
+      if (cached) return cached
+      probe.style.color = ''
+      probe.style.color = expr
+      const value = getComputedStyle(probe).color || baseGreen
+      resolvedCache.set(expr, value)
+      return value
+    }
+    const colorForType = (type: string): string => {
+      if (!colorByTypeRef.current || !typeColorRef.current) return baseGreen
+      return darken(resolveExpr(typeColorRef.current(type)), 0.12)
     }
 
     const spread = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.4 + 1
     const nodes: SimNode[] = data.nodes.map((node, index) => {
       const angle = (index / Math.max(data.nodes.length, 1)) * Math.PI * 2
       return {
-        id: node.id, label: node.label, degree: node.degree,
+        id: node.id, label: node.label, degree: node.degree, type: node.isA ?? UNTYPED_KEY,
         x: Math.cos(angle) * spread * (0.3 + Math.random() * 0.7),
         y: Math.sin(angle) * spread * (0.3 + Math.random() * 0.7),
         vx: 0, vy: 0, pinned: false,
@@ -180,7 +220,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, 
         const isNeighbor = hoverNeighbors?.has(node) ?? false
         ctx!.globalAlpha = hovered && !isHover && !isNeighbor ? 0.3 : 1
         ctx!.beginPath(); ctx!.arc(screen.x, screen.y, r, 0, Math.PI * 2)
-        ctx!.fillStyle = isHover ? colors.hi : colors.node
+        ctx!.fillStyle = isHover ? colors.hi : colorForType(node.type)
         ctx!.fill()
         const a = isHover ? 1 : (p.showLabels ? fade : 0)
         if (a > 0.02) {
@@ -284,6 +324,7 @@ export function GraphView({ entries, onOpenNote, params = DEFAULT_GRAPH_PARAMS, 
       canvas.removeEventListener('pointerup', pointerUp)
       canvas.removeEventListener('wheel', wheel)
       resizeObserver.disconnect()
+      probe.remove()
     }
   }, [data, relayoutNonce])
 

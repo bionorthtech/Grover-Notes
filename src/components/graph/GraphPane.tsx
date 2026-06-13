@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { VaultEntry } from '../../types'
+import { buildTypeEntryMap, getTypeColor } from '../../utils/typeColors'
 import { GraphView } from './GraphView'
-import { GraphSettingsPanel } from './GraphSettingsPanel'
+import { GraphSettingsPanel, type GraphTypeLegendItem } from './GraphSettingsPanel'
 import { DEFAULT_GRAPH_PARAMS } from './graphParams'
+import { buildGraphData, graphTypes, UNTYPED_KEY, type GraphFilter } from './graphData'
 
 function GraphGlyph({ size = 13 }: { size?: number }) {
   return (
@@ -17,14 +19,52 @@ function GraphGlyph({ size = 13 }: { size?: number }) {
  * In-pane graph surface that replaces the note list + editor while open.
  * Header mimics a tab strip (Obsidian-style) with a single "Graph view" tab.
  */
-export function GraphPane({ entries, onOpenNote, onClose }: {
+export function GraphPane({ entries, onOpenNote, onClose, activeNotePath = null }: {
   entries: VaultEntry[]
   onOpenNote: (path: string) => void
   onClose: () => void
+  activeNotePath?: string | null
 }) {
   const [params, setParams] = useState(DEFAULT_GRAPH_PARAMS)
   const [showSettings, setShowSettings] = useState(true)
   const [relayoutNonce, setRelayoutNonce] = useState(0)
+  const [colorByType, setColorByType] = useState(true)
+  const [includeOrphans, setIncludeOrphans] = useState(false)
+  const [localMode, setLocalMode] = useState(false)
+  const [localHops, setLocalHops] = useState(1)
+  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(() => new Set())
+
+  const typeMap = useMemo(() => buildTypeEntryMap(entries), [entries])
+  const typeColorExpr = useCallback(
+    (type: string) => (type === UNTYPED_KEY ? 'var(--muted-foreground)' : getTypeColor(type, typeMap[type]?.color)),
+    [typeMap],
+  )
+
+  // Types present in the full (unfiltered) graph drive a stable legend.
+  const availableTypes = useMemo(
+    () => graphTypes(buildGraphData(entries, { includeOrphans })),
+    [entries, includeOrphans],
+  )
+  const legend: GraphTypeLegendItem[] = availableTypes.map((name) => ({
+    name,
+    color: typeColorExpr(name),
+    hidden: hiddenTypes.has(name),
+  }))
+
+  const localRoot = localMode ? activeNotePath : null
+  const filter: GraphFilter = useMemo(
+    () => ({ hiddenTypes, localRoot, localHops }),
+    [hiddenTypes, localRoot, localHops],
+  )
+
+  const toggleType = useCallback((name: string) => {
+    setHiddenTypes((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }, [])
 
   return (
     <div data-testid="graph-pane" className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -61,13 +101,33 @@ export function GraphPane({ entries, onOpenNote, onClose }: {
         </button>
       </div>
       <div className="relative min-h-0 flex-1">
-        <GraphView entries={entries} onOpenNote={onOpenNote} params={params} relayoutNonce={relayoutNonce} />
+        <GraphView
+          entries={entries}
+          onOpenNote={onOpenNote}
+          params={params}
+          relayoutNonce={relayoutNonce}
+          filter={filter}
+          includeOrphans={includeOrphans}
+          colorByType={colorByType}
+          typeColorExpr={typeColorExpr}
+        />
         {showSettings && (
           <GraphSettingsPanel
             params={params}
             onChange={setParams}
             onClose={() => setShowSettings(false)}
             onRelayout={() => setRelayoutNonce((nonce) => nonce + 1)}
+            colorByType={colorByType}
+            onColorByTypeChange={setColorByType}
+            includeOrphans={includeOrphans}
+            onIncludeOrphansChange={setIncludeOrphans}
+            localMode={localMode}
+            onLocalModeChange={setLocalMode}
+            localModeDisabled={!activeNotePath}
+            localHops={localHops}
+            onLocalHopsChange={setLocalHops}
+            legend={legend}
+            onToggleType={toggleType}
           />
         )}
       </div>

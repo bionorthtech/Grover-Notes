@@ -3,11 +3,63 @@ import { Slider } from '../ui/slider'
 import { Switch } from '../ui/switch'
 import type { GraphParams } from './graphParams'
 
+export interface GraphTypeLegendItem {
+  name: string
+  /** CSS colour expression for this type's swatch. */
+  color: string
+  hidden: boolean
+}
+
 interface GraphSettingsPanelProps {
   params: GraphParams
   onChange: (params: GraphParams) => void
   onClose: () => void
   onRelayout: () => void
+  colorByType: boolean
+  onColorByTypeChange: (value: boolean) => void
+  includeOrphans: boolean
+  onIncludeOrphansChange: (value: boolean) => void
+  localMode: boolean
+  onLocalModeChange: (value: boolean) => void
+  localModeDisabled: boolean
+  localHops: number
+  onLocalHopsChange: (value: number) => void
+  legend: GraphTypeLegendItem[]
+  onToggleType: (name: string) => void
+}
+
+function ToggleRow({ label, checked, onChange, disabled }: {
+  label: string
+  checked: boolean
+  onChange: (value: boolean) => void
+  disabled?: boolean
+}) {
+  return (
+    <div className={`flex items-center justify-between text-[12px] ${disabled ? 'opacity-40' : ''}`}>
+      <span className="text-muted-foreground">{label}</span>
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} aria-label={label} />
+    </div>
+  )
+}
+
+function TypeLegend({ legend, onToggleType }: { legend: GraphTypeLegendItem[]; onToggleType: (name: string) => void }) {
+  if (legend.length === 0) return null
+  return (
+    <div className="space-y-0.5">
+      {legend.map((item) => (
+        <button
+          key={item.name}
+          type="button"
+          onClick={() => onToggleType(item.name)}
+          aria-pressed={!item.hidden}
+          className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-[12px] transition-colors hover:bg-[var(--state-hover)] ${item.hidden ? 'opacity-40' : ''}`}
+        >
+          <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+          <span className={`truncate ${item.hidden ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{item.name}</span>
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function SliderRow({ label, value, min, max, step, onChange }: {
@@ -52,7 +104,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 /** Floating, collapsible graph controls — styled after Obsidian's graph settings card. */
-export function GraphSettingsPanel({ params, onChange, onClose, onRelayout }: GraphSettingsPanelProps) {
+export function GraphSettingsPanel({
+  params, onChange, onClose, onRelayout,
+  colorByType, onColorByTypeChange, includeOrphans, onIncludeOrphansChange,
+  localMode, onLocalModeChange, localModeDisabled, localHops, onLocalHopsChange,
+  legend, onToggleType,
+}: GraphSettingsPanelProps) {
   const set = (patch: Partial<GraphParams>) => onChange({ ...params, ...patch })
 
   return (
@@ -93,6 +150,26 @@ export function GraphSettingsPanel({ params, onChange, onClose, onRelayout }: Gr
         <SliderRow label="Text fade threshold" value={params.textFade} min={0} max={1} step={0.05} onChange={(v) => set({ textFade: v })} />
         <SliderRow label="Node size" value={params.nodeSize} min={0.5} max={3} step={0.1} onChange={(v) => set({ nodeSize: v })} />
         <SliderRow label="Link thickness" value={params.linkThickness} min={1} max={5} step={0.5} onChange={(v) => set({ linkThickness: v })} />
+      </Section>
+
+      <Section title="Filters">
+        <ToggleRow label="Colour by type" checked={colorByType} onChange={onColorByTypeChange} />
+        <ToggleRow label="Show orphans" checked={includeOrphans} onChange={onIncludeOrphansChange} />
+        <ToggleRow
+          label="Local graph"
+          checked={localMode}
+          onChange={onLocalModeChange}
+          disabled={localModeDisabled}
+        />
+        {localMode && !localModeDisabled && (
+          <SliderRow label="Neighbour depth" value={localHops} min={1} max={4} step={1} onChange={onLocalHopsChange} />
+        )}
+        {legend.length > 0 && (
+          <div className="space-y-1 pt-1">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">Types</div>
+            <TypeLegend legend={legend} onToggleType={onToggleType} />
+          </div>
+        )}
       </Section>
 
       <Section title="Forces">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { VaultEntry } from '../../types'
-import { buildGraphData } from './graphData'
+import { buildGraphData, filterGraph, graphTypes, UNTYPED_KEY } from './graphData'
 
 function entry(partial: Partial<VaultEntry> & { path: string; filename: string }): VaultEntry {
   return {
@@ -50,8 +50,54 @@ describe('buildGraphData', () => {
       entry({ path: '/v/2.md', filename: 'two.md', title: 'Two', outgoingLinks: ['hub'] }),
       entry({ path: '/v/3.md', filename: 'three.md', title: 'Three', outgoingLinks: ['hub'] }),
     ]
-    const g = buildGraphData(hub, 2)
+    const g = buildGraphData(hub, { maxNodes: 2 })
     expect(g.shown).toBe(2)
     expect(g.nodes.map((n) => n.id)).toContain('/v/h.md') // hub has the highest degree
+  })
+
+  it('excludes orphans by default but surfaces them when asked', () => {
+    expect(buildGraphData(entries).nodes.map((n) => n.id)).not.toContain('/v/d.md') // Dave is unlinked
+    const withOrphans = buildGraphData(entries, { includeOrphans: true })
+    expect(withOrphans.nodes.map((n) => n.id)).toContain('/v/d.md')
+    expect(withOrphans.totalConnected).toBe(3) // orphan does not inflate the connected count
+  })
+})
+
+describe('graphTypes', () => {
+  it('lists distinct types present, grouping untyped notes', () => {
+    const data = buildGraphData([
+      entry({ path: '/v/a.md', filename: 'a.md', title: 'A', isA: 'Person', outgoingLinks: ['B'] }),
+      entry({ path: '/v/b.md', filename: 'b.md', title: 'B', isA: 'Project', outgoingLinks: ['A'] }),
+      entry({ path: '/v/c.md', filename: 'c.md', title: 'C', outgoingLinks: ['A'] }),
+    ])
+    expect(graphTypes(data)).toEqual(['Person', 'Project', UNTYPED_KEY])
+  })
+})
+
+describe('filterGraph', () => {
+  const data = buildGraphData([
+    entry({ path: '/v/a.md', filename: 'a.md', title: 'A', isA: 'Person', outgoingLinks: ['B', 'C'] }),
+    entry({ path: '/v/b.md', filename: 'b.md', title: 'B', isA: 'Project', outgoingLinks: ['D'] }),
+    entry({ path: '/v/c.md', filename: 'c.md', title: 'C', isA: 'Project' }),
+    entry({ path: '/v/d.md', filename: 'd.md', title: 'D', isA: 'Topic' }),
+  ])
+
+  it('hides nodes of hidden types and their incident edges', () => {
+    const filtered = filterGraph(data, { hiddenTypes: new Set(['Project']) })
+    const ids = filtered.nodes.map((n) => n.id)
+    expect(ids).toEqual(expect.arrayContaining(['/v/a.md', '/v/d.md']))
+    expect(ids).not.toContain('/v/b.md')
+    expect(filtered.edges.every((e) => e.source !== '/v/b.md' && e.target !== '/v/b.md')).toBe(true)
+  })
+
+  it('restricts to the local neighborhood within N hops of a root', () => {
+    const oneHop = filterGraph(data, { hiddenTypes: new Set(), localRoot: '/v/a.md', localHops: 1 })
+    expect(oneHop.nodes.map((n) => n.id).sort()).toEqual(['/v/a.md', '/v/b.md', '/v/c.md'])
+    const twoHop = filterGraph(data, { hiddenTypes: new Set(), localRoot: '/v/a.md', localHops: 2 })
+    expect(twoHop.nodes.map((n) => n.id)).toContain('/v/d.md') // reached via B
+  })
+
+  it('returns everything unchanged when no filters apply', () => {
+    expect(filterGraph(data, { hiddenTypes: new Set() }).nodes).toHaveLength(data.nodes.length)
   })
 })

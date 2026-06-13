@@ -1628,6 +1628,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
               entries={visibleEntries}
               onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
               onClose={() => setGraphOpen(false)}
+              activeNotePath={activeTab?.entry?.path ?? null}
             />
           ) : (
           <>
