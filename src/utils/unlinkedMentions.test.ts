@@ -23,6 +23,16 @@ describe('findUnlinkedMentions', () => {
     expect(findUnlinkedMentions('see [Alice](http://x)', targets)).toEqual([])
   })
 
+  it('ignores mentions inside the YAML frontmatter block', () => {
+    const body = '---\ntype: Person\nowner: Alice\n---\n\nBody with no mentions.'
+    expect(findUnlinkedMentions(body, targets)).toEqual([])
+  })
+
+  it('still finds mentions in the body below frontmatter', () => {
+    const body = '---\ntitle: Note\n---\n\nMet with Alice today.'
+    expect(findUnlinkedMentions(body, targets)[0]).toMatchObject({ path: '/v/alice.md', matchedText: 'Alice' })
+  })
+
   it('matches whole words only', () => {
     expect(findUnlinkedMentions('Alicia is not Alice', targets)[0].index).toBe(14)
   })

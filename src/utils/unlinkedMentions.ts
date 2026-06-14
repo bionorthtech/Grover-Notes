@@ -23,10 +23,12 @@ export interface UnlinkedMention {
   index: number
 }
 
-/** Spans (start/end offsets) of regions that should never be matched: existing
- *  wikilinks, inline code, and fenced code blocks. */
+/** Spans (start/end offsets) of regions that should never be matched: the YAML
+ *  frontmatter block, existing wikilinks, inline code, and fenced code blocks. */
 function maskedSpans(body: string): Array<[number, number]> {
   const spans: Array<[number, number]> = []
+  const frontmatter = body.match(/^---\r?\n[\s\S]*?\r?\n---/)
+  if (frontmatter) spans.push([0, frontmatter[0].length])
   const patterns = [
     /\[\[[^\]]*\]\]/g, // [[wikilinks]]
     /`[^`]*`/g, // `inline code`

@@ -23,6 +23,17 @@ export function darken(color: string, amount: number): string {
   return `rgb(${r}, ${g}, ${b})`
 }
 
+/**
+ * True when a colour is effectively greyscale (very low saturation) — used to
+ * detect the "no type colour" default so those nodes can fall back to green
+ * instead of rendering grey. `tolerance` is the max channel spread treated as grey.
+ */
+export function isGreyish(color: string, tolerance = 26): boolean {
+  const rgb = parseRgb(color)
+  if (!rgb) return false
+  return Math.max(...rgb) - Math.min(...rgb) <= tolerance
+}
+
 /** Smoothly maps the camera scale to label opacity given the fade threshold. */
 export function labelAlpha(scale: number, textFade: number): number {
   const cutoff = 0.25 + textFade * 0.85

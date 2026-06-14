@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { darken, labelAlpha } from './graphMath'
+import { darken, isGreyish, labelAlpha } from './graphMath'
 
 describe('darken', () => {
   it('scales hex colours toward black', () => {
@@ -15,6 +15,19 @@ describe('darken', () => {
 
   it('returns the input unchanged when the colour cannot be parsed', () => {
     expect(darken('var(--accent-blue)', 0.5)).toBe('var(--accent-blue)')
+  })
+})
+
+describe('isGreyish', () => {
+  it('flags low-saturation colours as grey', () => {
+    expect(isGreyish('rgb(140, 140, 140)')).toBe(true)
+    expect(isGreyish('#888888')).toBe(true)
+    expect(isGreyish('rgb(150, 145, 138)')).toBe(true) // muted-foreground-ish
+  })
+
+  it('does not flag saturated colours', () => {
+    expect(isGreyish('#5FC98C')).toBe(false) // green
+    expect(isGreyish('rgb(220, 120, 40)')).toBe(false) // orange
   })
 })
 

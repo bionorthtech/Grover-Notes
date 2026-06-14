@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { VaultEntry } from '../../types'
 import { buildGraphData, filterGraph, UNTYPED_KEY, type GraphFilter } from './graphData'
 import { DEFAULT_GRAPH_PARAMS, type GraphParams } from './graphParams'
-import { darken, labelAlpha } from './graphMath'
+import { darken, isGreyish, labelAlpha } from './graphMath'
 
 interface GraphViewProps {
   entries: VaultEntry[]
@@ -114,7 +114,7 @@ export function GraphView({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const baseGreen = darken(cssColor(wrap, '--accent-blue', '#5FC98C'), 0.42)
+    const baseGreen = darken(cssColor(wrap, '--accent-blue', '#5FC98C'), 0.6)
     const colors = {
       node: baseGreen,
       edge: cssColor(wrap, '--text-primary', '#E6E1D8'),
@@ -139,7 +139,12 @@ export function GraphView({
     }
     const colorForType = (type: string): string => {
       if (!colorByTypeRef.current || !typeColorRef.current) return baseGreen
-      return darken(resolveExpr(typeColorRef.current(type)), 0.12)
+      const resolved = resolveExpr(typeColorRef.current(type))
+      // Untyped / unmapped types resolve to a muted grey — fall back to the brand
+      // green so the graph stays a cohesive dark-green palette. Typed colours are
+      // darkened hard into a deep tone.
+      if (isGreyish(resolved)) return baseGreen
+      return darken(resolved, 0.55)
     }
 
     const spread = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.4 + 1
