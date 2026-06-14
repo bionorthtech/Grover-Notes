@@ -13,8 +13,8 @@ describe('getTypeColor', () => {
     expect(getTypeColor(null)).toBe('var(--muted-foreground)')
   })
 
-  it('returns neutral muted color for unknown type without custom key', () => {
-    expect(getTypeColor('UnknownType')).toBe('var(--muted-foreground)')
+  it('falls back to the brand green for a typed note without a custom colour', () => {
+    expect(getTypeColor('UnknownType')).toBe('var(--accent-blue)')
   })
 
   it('uses custom color key over hardcoded map', () => {
@@ -49,8 +49,8 @@ describe('getTypeLightColor', () => {
     expect(getTypeLightColor(null)).toBe('var(--muted)')
   })
 
-  it('returns neutral muted light color for unknown type without custom key', () => {
-    expect(getTypeLightColor('UnknownType')).toBe('var(--muted)')
+  it('falls back to the brand green light tint for a typed note without a custom colour', () => {
+    expect(getTypeLightColor('UnknownType')).toBe('var(--accent-blue-light)')
   })
 
   it('uses custom color key for light variant', () => {

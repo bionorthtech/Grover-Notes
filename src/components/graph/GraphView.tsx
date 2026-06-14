@@ -144,7 +144,7 @@ export function GraphView({
       // green so the graph stays a cohesive dark-green palette. Typed colours are
       // darkened hard into a deep tone.
       if (isGreyish(resolved)) return baseGreen
-      return darken(resolved, 0.55)
+      return darken(resolved, 0.6)
     }
 
     const spread = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.4 + 1
@@ -334,7 +334,7 @@ export function GraphView({
   }, [data, relayoutNonce])
 
   return (
-    <div ref={wrapRef} className="relative h-full w-full overflow-hidden">
+    <div ref={wrapRef} className="relative h-full w-full overflow-hidden bg-[var(--surface-app)]">
       <canvas ref={canvasRef} data-testid="graph-canvas" />
       {data.shown === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">

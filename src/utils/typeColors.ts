@@ -45,8 +45,15 @@ const TYPE_LIGHT_COLOR_MAP: Record<string, string> = {
   Type: 'var(--accent-blue-light)',
 }
 
+// A note with NO type at all stays neutral grey.
 const DEFAULT_COLOR = 'var(--muted-foreground)'
 const DEFAULT_LIGHT_COLOR = 'var(--muted)'
+
+// Grover identity: a note that HAS a type but no explicit colour falls back to the
+// brand green (not grey) so the sidebar, inspector, wikilinks, and graph stay a
+// cohesive green. A custom per-type colour still takes precedence.
+const UNCOLORED_TYPE_COLOR = 'var(--accent-blue)'
+const UNCOLORED_TYPE_LIGHT_COLOR = 'var(--accent-blue-light)'
 
 /** Color key → CSS variable mapping for the design system accent palette */
 export const ACCENT_COLORS: { key: string; label: string; css: string; cssLight: string }[] = [
@@ -100,12 +107,14 @@ function resolveCustomLightColor(customColorKey?: string | null): string | null 
 export function getTypeColor(isA: string | null, customColorKey?: string | null): string {
   const customColor = resolveCustomColor(customColorKey)
   if (customColor) return customColor
-  return (isA && TYPE_COLOR_LOOKUP.get(isA)) ?? DEFAULT_COLOR
+  if (!isA) return DEFAULT_COLOR
+  return TYPE_COLOR_LOOKUP.get(isA) ?? UNCOLORED_TYPE_COLOR
 }
 
 /** Returns the CSS variable for the light/background variant of a given note type's color */
 export function getTypeLightColor(isA: string | null, customColorKey?: string | null): string {
   const customLightColor = resolveCustomLightColor(customColorKey)
   if (customLightColor) return customLightColor
-  return (isA && TYPE_LIGHT_COLOR_LOOKUP.get(isA)) ?? DEFAULT_LIGHT_COLOR
+  if (!isA) return DEFAULT_LIGHT_COLOR
+  return TYPE_LIGHT_COLOR_LOOKUP.get(isA) ?? UNCOLORED_TYPE_LIGHT_COLOR
 }

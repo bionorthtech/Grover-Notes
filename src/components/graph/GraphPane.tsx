@@ -35,8 +35,10 @@ export function GraphPane({ entries, onOpenNote, onClose, activeNotePath = null 
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(() => new Set())
 
   const typeMap = useMemo(() => buildTypeEntryMap(entries), [entries])
+  // Untyped notes use the brand green too so the graph + legend stay cohesive
+  // (elsewhere untyped stays neutral grey, but the graph is an all-green surface).
   const typeColorExpr = useCallback(
-    (type: string) => (type === UNTYPED_KEY ? 'var(--muted-foreground)' : getTypeColor(type, typeMap[type]?.color)),
+    (type: string) => (type === UNTYPED_KEY ? 'var(--accent-blue)' : getTypeColor(type, typeMap[type]?.color)),
     [typeMap],
   )
 
