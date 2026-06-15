@@ -15,6 +15,8 @@ interface NavigationCommandsConfig {
   onGoForward?: () => void
   canGoBack?: boolean
   canGoForward?: boolean
+  onOpenDailyNote?: () => void
+  onQuickCapture?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -86,10 +88,14 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onGoForward,
     canGoBack,
     canGoForward,
+    onOpenDailyNote,
+    onQuickCapture,
   } = config
 
   return [
     { id: 'search-notes', label: 'Search Notes', group: 'Navigation', shortcut: getAppCommandShortcutDisplay(APP_COMMAND_IDS.fileQuickOpen), keywords: ['find', 'open', 'quick'], enabled: true, execute: onQuickOpen },
+    { id: 'open-daily-note', label: 'Open daily note…', group: 'Navigation', keywords: ['daily', 'today', 'journal', 'calendar', 'date', 'diary'], enabled: !!onOpenDailyNote, execute: () => onOpenDailyNote?.() },
+    { id: 'quick-capture', label: 'Quick capture', group: 'Navigation', keywords: ['capture', 'jot', 'inbox', 'note', 'quick', 'idea', 'todo'], enabled: !!onQuickCapture, execute: () => onQuickCapture?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },

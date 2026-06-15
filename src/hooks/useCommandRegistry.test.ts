@@ -687,10 +687,12 @@ describe('useCommandRegistry', () => {
     expect(onDeleteFolder).toHaveBeenCalledTimes(1)
   })
 
-  it('omits the removed daily-note command', () => {
-    const config = makeConfig()
-    const { result } = renderHook(() => useCommandRegistry(config))
-    expect(findCommand(result.current, 'open-daily-note')).toBeUndefined()
+  it('exposes the daily-note command only when a handler is provided', () => {
+    const without = renderHook(() => useCommandRegistry(makeConfig()))
+    expect(findCommand(without.result.current, 'open-daily-note')?.enabled).toBe(false)
+    const onOpenDailyNote = vi.fn()
+    const withHandler = renderHook(() => useCommandRegistry(makeConfig({ onOpenDailyNote })))
+    expect(findCommand(withHandler.result.current, 'open-daily-note')?.enabled).toBe(true)
   })
 
   it('includes Contribute in the Settings group when available', () => {

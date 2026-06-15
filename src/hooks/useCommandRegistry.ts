@@ -62,6 +62,8 @@ interface CommandRegistryConfig {
   onExportNoteAsPdf?: () => void
   onExtractHighlights?: () => void
   onSuggestLinks?: () => void
+  onOpenDailyNote?: () => void
+  onQuickCapture?: () => void
   onToggleFavorite?: (path: string) => void
   onToggleOrganized?: (path: string) => void
   onCustomizeNoteListColumns?: () => void
@@ -163,6 +165,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onSelect, onRenameFolder, onDeleteFolder, onRevealSelectedFolder, onCopySelectedFolderPath,
     showInbox,
     onGoBack, onGoForward, canGoBack, canGoForward,
+    onOpenDailyNote, onQuickCapture,
     onCheckForUpdates, onCreateType,
     onRemoveActiveVault, onRestoreGettingStarted, isGettingStartedHidden, vaultCount,
     mcpStatus, onInstallMcp, aiFeaturesEnabled,
@@ -209,10 +212,12 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onGoForward,
     canGoBack,
     canGoForward,
+    onOpenDailyNote,
+    onQuickCapture,
   }), [
     onQuickOpen, onSelect, selection, onRenameFolder, onDeleteFolder,
     onRevealSelectedFolder, onCopySelectedFolderPath, showInbox,
-    onGoBack, onGoForward, canGoBack, canGoForward,
+    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture,
   ])
 
   const noteCommands = useMemo(() => buildNoteCommands({

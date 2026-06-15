@@ -20,6 +20,8 @@ import { SettingsPanel } from './components/SettingsPanel'
 import { CloneVaultModal } from './components/CloneVaultModal'
 import { FeedbackDialog } from './components/FeedbackDialog'
 import { SuggestLinksDialog } from './components/SuggestLinksDialog'
+import { DailyNoteCalendarDialog } from './components/DailyNoteCalendarDialog'
+import { QuickCaptureDialog } from './components/QuickCaptureDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -40,6 +42,13 @@ import { triggerCommitEntryAction } from './utils/commitEntryAction'
 import { generateCommitMessage } from './utils/commitMessage'
 import { useDialogs } from './hooks/useDialogs'
 import { useSuggestLinks } from './hooks/useSuggestLinks'
+import { useDailyNotes } from './hooks/useDailyNotes'
+import { useQuickCapture } from './hooks/useQuickCapture'
+import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
+import { cacheNoteContent } from './hooks/useTabManagement'
+import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
+import { startOfToday, dailyNotePath, dailyNoteTitle, buildDailyNoteContent } from './utils/dailyNotes'
+import { findByNotePath, joinVaultPath } from './utils/notePathIdentity'
 import { useVaultSwitcher } from './hooks/useVaultSwitcher'
 import { useGitHistory } from './hooks/useGitHistory'
 import { useUpdater, restartApp } from './hooks/useUpdater'
@@ -566,6 +575,43 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     updateFrontmatter: notes.handleUpdateFrontmatter,
     toast: setToastMessage,
   })
+  const addVaultEntry = vault.addEntry
+  const updateVaultEntry = vault.updateEntry
+  const persistAndOpenNote = useCallback(async (entry: VaultEntry, content: string) => {
+    await persistNewNote({ path: entry.path, content, vaultPath: resolvedPath })
+    cacheNoteContent(entry.path, content, entry)
+    addVaultEntry(entry)
+    openTabWithContent(entry, content)
+  }, [resolvedPath, addVaultEntry, openTabWithContent])
+  const appendToDailyNote = useCallback(async (text: string) => {
+    const today = startOfToday()
+    const fullPath = joinVaultPath(resolvedPath, dailyNotePath(today))
+    const existing = findByNotePath(visibleEntries, fullPath)
+    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+    const line = `- ${stamp} ${text}\n`
+    if (existing) {
+      const current = await readNoteContent(fullPath, resolvedPath)
+      const updated = `${current}${current.endsWith('\n') ? '' : '\n'}${line}`
+      await saveNoteContent(fullPath, updated, resolvedPath)
+      cacheNoteContent(fullPath, updated, existing)
+      updateVaultEntry(fullPath, { modifiedAt: Math.floor(Date.now() / 1000) })
+      handleSelectNote(existing)
+      return
+    }
+    const title = dailyNoteTitle(today)
+    const entry = buildNewEntry({ path: fullPath, slug: title, title, type: 'Note', status: null })
+    await persistAndOpenNote(entry, `${buildDailyNoteContent(today)}${line}`)
+  }, [resolvedPath, visibleEntries, updateVaultEntry, handleSelectNote, persistAndOpenNote])
+  const dailyNotes = useDailyNotes({
+    vaultPath: resolvedPath,
+    entries: visibleEntries,
+    openEntry: notes.handleSelectNote,
+    persistAndOpen: persistAndOpenNote,
+    getActivePath: () => notes.activeTabPath,
+    toast: setToastMessage,
+  })
+  const [dailyCalendarOpen, setDailyCalendarOpen] = useState(false)
+  const quickCapture = useQuickCapture({ onCapture: appendToDailyNote, toast: setToastMessage })
   useNoteWindowLifecycle({
     activeTabPath: notes.activeTabPath,
     handleSelectNote,
@@ -1458,6 +1504,8 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onToggleTableOfContents: toggleTableOfContentsCommand,
     onExportNoteAsPdf: activeDeletedFile ? undefined : exportNotePdfCommand,
     onSuggestLinks: activeDeletedFile ? undefined : suggestLinks.requestSuggestLinks,
+    onOpenDailyNote: () => setDailyCalendarOpen(true),
+    onQuickCapture: quickCapture.requestCapture,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
     onSetNoteWidth: handleSetActiveNoteWidth,
@@ -1812,6 +1860,17 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           mentions={suggestLinks.mentions}
           onConfirm={suggestLinks.confirm}
           onCancel={suggestLinks.cancel}
+        />
+        <DailyNoteCalendarDialog
+          open={dailyCalendarOpen}
+          existingDates={dailyNotes.existingDates()}
+          onPick={(date) => { void dailyNotes.openDate(date) }}
+          onCancel={() => setDailyCalendarOpen(false)}
+        />
+        <QuickCaptureDialog
+          open={quickCapture.open}
+          onSubmit={(text) => { void quickCapture.submit(text) }}
+          onCancel={quickCapture.cancel}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />

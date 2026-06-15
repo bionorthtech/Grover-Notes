@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  buildDailyNoteContent,
   dailyNoteHeading,
   dailyNotePath,
   dailyNoteTitle,
@@ -21,6 +22,12 @@ describe('dailyNoteTitle / dailyNotePath / dailyNoteHeading', () => {
 
   it('formats a human heading', () => {
     expect(dailyNoteHeading(JUN_13)).toBe('Saturday, June 13, 2026')
+  })
+
+  it('builds daily note content with frontmatter and a dated heading', () => {
+    expect(buildDailyNoteContent(JUN_13)).toBe(
+      '---\ntitle: 2026-06-13\ntype: Note\n---\n\n# Saturday, June 13, 2026\n\n',
+    )
   })
 })
 

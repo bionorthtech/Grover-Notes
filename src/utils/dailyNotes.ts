@@ -20,6 +20,11 @@ export function dailyNoteHeading(date: Date): string {
   return format(date, 'EEEE, MMMM d, yyyy')
 }
 
+/** Frontmatter + heading body for a freshly created daily note. */
+export function buildDailyNoteContent(date: Date): string {
+  return `---\ntitle: ${dailyNoteTitle(date)}\ntype: Note\n---\n\n# ${dailyNoteHeading(date)}\n\n`
+}
+
 /**
  * Parses a daily-note date from a filename, title, or path. Accepts a leading
  * folder and a trailing extension; returns null if it isn't a `yyyy-MM-dd` note.

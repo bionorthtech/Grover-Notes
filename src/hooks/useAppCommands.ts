@@ -25,6 +25,8 @@ interface AppCommandsConfig {
   modifiedCount: number
   selection: SidebarSelection
   onQuickOpen: () => void
+  onOpenDailyNote?: () => void
+  onQuickCapture?: () => void
   onCommandPalette: () => void
   onSearch: () => void
   onFindInNote?: () => void
@@ -164,6 +166,8 @@ type CommandRegistryCoreActions = Pick<
   | 'entries'
   | 'modifiedCount'
   | 'onQuickOpen'
+  | 'onOpenDailyNote'
+  | 'onQuickCapture'
   | 'onCreateNote'
   | 'onCreateNoteOfType'
   | 'onSave'
@@ -475,6 +479,8 @@ function createCommandRegistryCoreConfig(
     entries: config.entries,
     modifiedCount: config.modifiedCount,
     onQuickOpen: config.onQuickOpen,
+    onOpenDailyNote: config.onOpenDailyNote,
+    onQuickCapture: config.onQuickCapture,
     onCreateNote: config.onCreateNote,
     onCreateNoteOfType: config.onCreateNoteOfType,
     onSave: config.onSave,
