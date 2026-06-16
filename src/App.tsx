@@ -22,6 +22,7 @@ import { FeedbackDialog } from './components/FeedbackDialog'
 import { SuggestLinksDialog } from './components/SuggestLinksDialog'
 import { DailyNoteCalendarDialog } from './components/DailyNoteCalendarDialog'
 import { QuickCaptureDialog } from './components/QuickCaptureDialog'
+import { AutoTypeInboxDialog } from './components/AutoTypeInboxDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -44,6 +45,9 @@ import { useDialogs } from './hooks/useDialogs'
 import { useSuggestLinks } from './hooks/useSuggestLinks'
 import { useDailyNotes } from './hooks/useDailyNotes'
 import { useQuickCapture } from './hooks/useQuickCapture'
+import { useAutoTypeInbox } from './hooks/useAutoTypeInbox'
+import { runAiStructured, resolveTaskTarget } from './lib/aiTask'
+import { buildAutoTypePrompt, autoTypeSystemPrompt, isTypeSuggestion } from './lib/autoTypeInbox'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
@@ -579,6 +583,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
   })
   const addVaultEntry = vault.addEntry
   const updateVaultEntry = vault.updateEntry
+  const updateFrontmatter = notes.handleUpdateFrontmatter
   const persistAndOpenNote = useCallback(async (entry: VaultEntry, content: string) => {
     await persistNewNote({ path: entry.path, content, vaultPath: resolvedPath })
     cacheNoteContent(entry.path, content, entry)
@@ -614,6 +619,23 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
   })
   const [dailyCalendarOpen, setDailyCalendarOpen] = useState(false)
   const quickCapture = useQuickCapture({ onCapture: appendToDailyNote, toast: setToastMessage })
+  const autoTypeInbox = useAutoTypeInbox({
+    entries: visibleEntries,
+    classify: useCallback(async (note, vaultTypes) => {
+      return runAiStructured(
+        {
+          target: resolveTaskTarget(settings),
+          message: buildAutoTypePrompt(note, vaultTypes),
+          systemPrompt: autoTypeSystemPrompt(),
+          vaultPath: resolvedPath,
+        },
+        { validate: isTypeSuggestion },
+      ).catch(() => null)
+    }, [settings, resolvedPath]),
+    readBody: useCallback((path: string) => readNoteContent(path, resolvedPath), [resolvedPath]),
+    applyType: useCallback((path: string, type: string) => updateFrontmatter(path, 'type', type), [updateFrontmatter]),
+    toast: setToastMessage,
+  })
   const handleExtractHighlights = useCallback(async () => {
     const highlights = extractHighlights(activeNoteSourceRef.current.body)
     if (highlights.length === 0) {
@@ -1517,6 +1539,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onSuggestLinks: activeDeletedFile ? undefined : suggestLinks.requestSuggestLinks,
     onOpenDailyNote: () => setDailyCalendarOpen(true),
     onQuickCapture: quickCapture.requestCapture,
+    onAutoTypeInbox: aiFeaturesEnabled ? () => { void autoTypeInbox.requestAutoType() } : undefined,
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
@@ -1883,6 +1906,12 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           open={quickCapture.open}
           onSubmit={(text) => { void quickCapture.submit(text) }}
           onCancel={quickCapture.cancel}
+        />
+        <AutoTypeInboxDialog
+          open={autoTypeInbox.open}
+          rows={autoTypeInbox.rows}
+          onApply={(paths) => { void autoTypeInbox.apply(paths) }}
+          onCancel={autoTypeInbox.cancel}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />
