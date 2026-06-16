@@ -129,6 +129,7 @@ interface AppCommandsConfig {
   onOpenActiveFileExternal?: (path: string) => void
   onExportNoteAsPdf?: () => void
   onSuggestLinks?: () => void
+  onExtractHighlights?: () => void
   onRevealSelectedFolder?: () => void
   onCopySelectedFolderPath?: () => void
   onToggleFavorite?: (path: string) => void
@@ -267,6 +268,7 @@ type CommandRegistryNoteActions = Pick<
   | 'noteListColumnsLabel'
   | 'onExportNoteAsPdf'
   | 'onSuggestLinks'
+  | 'onExtractHighlights'
 >
 
 function aiFeaturesAreEnabled(config: Pick<AppCommandsConfig, 'aiFeaturesEnabled'>): boolean {
@@ -599,6 +601,7 @@ function createCommandRegistryNoteConfig(
     noteListColumnsLabel: config.noteListColumnsLabel,
     onExportNoteAsPdf: config.onExportNoteAsPdf,
     onSuggestLinks: config.onSuggestLinks,
+    onExtractHighlights: config.onExtractHighlights,
   }
 }
 

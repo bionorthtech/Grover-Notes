@@ -47,6 +47,8 @@ import { useQuickCapture } from './hooks/useQuickCapture'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
+import { extractHighlights, formatHighlightsForClipboard } from './utils/extractHighlights'
+import { writeClipboardText } from './utils/clipboardText'
 import { startOfToday, dailyNotePath, dailyNoteTitle, buildDailyNoteContent } from './utils/dailyNotes'
 import { findByNotePath, joinVaultPath } from './utils/notePathIdentity'
 import { useVaultSwitcher } from './hooks/useVaultSwitcher'
@@ -612,6 +614,15 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
   })
   const [dailyCalendarOpen, setDailyCalendarOpen] = useState(false)
   const quickCapture = useQuickCapture({ onCapture: appendToDailyNote, toast: setToastMessage })
+  const handleExtractHighlights = useCallback(async () => {
+    const highlights = extractHighlights(activeNoteSourceRef.current.body)
+    if (highlights.length === 0) {
+      setToastMessage('No ==highlights== found in this note.')
+      return
+    }
+    await writeClipboardText(formatHighlightsForClipboard(highlights))
+    setToastMessage(`Copied ${highlights.length} highlight${highlights.length === 1 ? '' : 's'} to clipboard.`)
+  }, [])
   useNoteWindowLifecycle({
     activeTabPath: notes.activeTabPath,
     handleSelectNote,
@@ -1506,6 +1517,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onSuggestLinks: activeDeletedFile ? undefined : suggestLinks.requestSuggestLinks,
     onOpenDailyNote: () => setDailyCalendarOpen(true),
     onQuickCapture: quickCapture.requestCapture,
+    onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
     onSetNoteWidth: handleSetActiveNoteWidth,
