@@ -28,6 +28,7 @@ interface AppCommandsConfig {
   onOpenDailyNote?: () => void
   onQuickCapture?: () => void
   onAutoTypeInbox?: () => void
+  onDailyRollup?: () => void
   onCommandPalette: () => void
   onSearch: () => void
   onFindInNote?: () => void
@@ -171,6 +172,7 @@ type CommandRegistryCoreActions = Pick<
   | 'onOpenDailyNote'
   | 'onQuickCapture'
   | 'onAutoTypeInbox'
+  | 'onDailyRollup'
   | 'onCreateNote'
   | 'onCreateNoteOfType'
   | 'onSave'
@@ -486,6 +488,7 @@ function createCommandRegistryCoreConfig(
     onOpenDailyNote: config.onOpenDailyNote,
     onQuickCapture: config.onQuickCapture,
     onAutoTypeInbox: config.onAutoTypeInbox,
+    onDailyRollup: config.onDailyRollup,
     onCreateNote: config.onCreateNote,
     onCreateNoteOfType: config.onCreateNoteOfType,
     onSave: config.onSave,

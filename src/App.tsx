@@ -48,6 +48,8 @@ import { useQuickCapture } from './hooks/useQuickCapture'
 import { useAutoTypeInbox } from './hooks/useAutoTypeInbox'
 import { runAiStructured, resolveTaskTarget } from './lib/aiTask'
 import { buildAutoTypePrompt, autoTypeSystemPrompt, isTypeSuggestion } from './lib/autoTypeInbox'
+import { runAiText } from './lib/aiTask'
+import { selectTodaysChangedNotes, buildRollupPrompt, rollupSystemPrompt, formatRollupSection } from './lib/dailyRollup'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
@@ -590,15 +592,13 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     addVaultEntry(entry)
     openTabWithContent(entry, content)
   }, [resolvedPath, addVaultEntry, openTabWithContent])
-  const appendToDailyNote = useCallback(async (text: string) => {
+  const appendToTodayNote = useCallback(async (block: string) => {
     const today = startOfToday()
     const fullPath = joinVaultPath(resolvedPath, dailyNotePath(today))
     const existing = findByNotePath(visibleEntries, fullPath)
-    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-    const line = `- ${stamp} ${text}\n`
     if (existing) {
       const current = await readNoteContent(fullPath, resolvedPath)
-      const updated = `${current}${current.endsWith('\n') ? '' : '\n'}${line}`
+      const updated = `${current}${current.endsWith('\n') ? '' : '\n'}${block}`
       await saveNoteContent(fullPath, updated, resolvedPath)
       cacheNoteContent(fullPath, updated, existing)
       updateVaultEntry(fullPath, { modifiedAt: Math.floor(Date.now() / 1000) })
@@ -607,8 +607,33 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     }
     const title = dailyNoteTitle(today)
     const entry = buildNewEntry({ path: fullPath, slug: title, title, type: 'Note', status: null })
-    await persistAndOpenNote(entry, `${buildDailyNoteContent(today)}${line}`)
+    await persistAndOpenNote(entry, `${buildDailyNoteContent(today)}${block}`)
   }, [resolvedPath, visibleEntries, updateVaultEntry, handleSelectNote, persistAndOpenNote])
+  const appendToDailyNote = useCallback((text: string) => {
+    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+    return appendToTodayNote(`- ${stamp} ${text}\n`)
+  }, [appendToTodayNote])
+  const handleDailyRollup = useCallback(async () => {
+    const changed = selectTodaysChangedNotes(visibleEntries, startOfToday())
+    if (changed.length === 0) {
+      setToastMessage('No notes changed today to summarize.')
+      return
+    }
+    setToastMessage('Summarizing today…')
+    try {
+      const summary = await runAiText({
+        target: resolveTaskTarget(settings),
+        message: buildRollupPrompt(changed.map((entry) => ({ title: entry.title || entry.filename, snippet: entry.snippet }))),
+        systemPrompt: rollupSystemPrompt(),
+        vaultPath: resolvedPath,
+      })
+      await appendToTodayNote(formatRollupSection(summary))
+      trackEvent('daily_rollup_generated', { notes: changed.length })
+      setToastMessage('Added today’s rollup to your daily note.')
+    } catch {
+      setToastMessage('Could not generate the rollup.')
+    }
+  }, [visibleEntries, settings, resolvedPath, appendToTodayNote])
   const dailyNotes = useDailyNotes({
     vaultPath: resolvedPath,
     entries: visibleEntries,
@@ -1540,6 +1565,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onOpenDailyNote: () => setDailyCalendarOpen(true),
     onQuickCapture: quickCapture.requestCapture,
     onAutoTypeInbox: aiFeaturesEnabled ? () => { void autoTypeInbox.requestAutoType() } : undefined,
+    onDailyRollup: aiFeaturesEnabled ? () => { void handleDailyRollup() } : undefined,
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
