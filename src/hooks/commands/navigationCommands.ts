@@ -19,6 +19,7 @@ interface NavigationCommandsConfig {
   onQuickCapture?: () => void
   onAutoTypeInbox?: () => void
   onDailyRollup?: () => void
+  onShowTasks?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -94,6 +95,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onQuickCapture,
     onAutoTypeInbox,
     onDailyRollup,
+    onShowTasks,
   } = config
 
   return [
@@ -102,6 +104,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'quick-capture', label: 'Quick capture', group: 'Navigation', keywords: ['capture', 'jot', 'inbox', 'note', 'quick', 'idea', 'todo'], enabled: !!onQuickCapture, execute: () => onQuickCapture?.() },
     { id: 'auto-type-inbox', label: 'Auto-type inbox notes (AI)', group: 'Navigation', keywords: ['ai', 'type', 'classify', 'inbox', 'organize', 'tag', 'auto'], enabled: !!onAutoTypeInbox, execute: () => onAutoTypeInbox?.() },
     { id: 'daily-rollup', label: 'Summarize today (AI rollup)', group: 'Navigation', keywords: ['ai', 'summary', 'rollup', 'today', 'daily', 'recap', 'digest'], enabled: !!onDailyRollup, execute: () => onDailyRollup?.() },
+    { id: 'show-tasks', label: 'Show all tasks', group: 'Navigation', keywords: ['task', 'tasks', 'todo', 'checkbox', 'todos', 'checklist'], enabled: !!onShowTasks, execute: () => onShowTasks?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },

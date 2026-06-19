@@ -23,6 +23,7 @@ import { SuggestLinksDialog } from './components/SuggestLinksDialog'
 import { DailyNoteCalendarDialog } from './components/DailyNoteCalendarDialog'
 import { QuickCaptureDialog } from './components/QuickCaptureDialog'
 import { AutoTypeInboxDialog } from './components/AutoTypeInboxDialog'
+import { TasksDialog } from './components/TasksDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -46,6 +47,7 @@ import { useSuggestLinks } from './hooks/useSuggestLinks'
 import { useDailyNotes } from './hooks/useDailyNotes'
 import { useQuickCapture } from './hooks/useQuickCapture'
 import { useAutoTypeInbox } from './hooks/useAutoTypeInbox'
+import { useVaultTasks } from './hooks/useVaultTasks'
 import { runAiStructured, resolveTaskTarget } from './lib/aiTask'
 import { buildAutoTypePrompt, autoTypeSystemPrompt, isTypeSuggestion } from './lib/autoTypeInbox'
 import { runAiText } from './lib/aiTask'
@@ -660,6 +662,15 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     readBody: useCallback((path: string) => readNoteContent(path, resolvedPath), [resolvedPath]),
     applyType: useCallback((path: string, type: string) => updateFrontmatter(path, 'type', type), [updateFrontmatter]),
     toast: setToastMessage,
+  })
+  const vaultTasks = useVaultTasks({
+    entries: visibleEntries,
+    readBody: useCallback((path: string) => readNoteContent(path, resolvedPath), [resolvedPath]),
+    saveBody: useCallback(async (path: string, content: string) => {
+      await saveNoteContent(path, content, resolvedPath)
+      cacheNoteContent(path, content)
+      updateVaultEntry(path, { modifiedAt: Math.floor(Date.now() / 1000) })
+    }, [resolvedPath, updateVaultEntry]),
   })
   const handleExtractHighlights = useCallback(async () => {
     const highlights = extractHighlights(activeNoteSourceRef.current.body)
@@ -1566,6 +1577,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onQuickCapture: quickCapture.requestCapture,
     onAutoTypeInbox: aiFeaturesEnabled ? () => { void autoTypeInbox.requestAutoType() } : undefined,
     onDailyRollup: aiFeaturesEnabled ? () => { void handleDailyRollup() } : undefined,
+    onShowTasks: () => { void vaultTasks.requestTasks() },
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
@@ -1938,6 +1950,16 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           rows={autoTypeInbox.rows}
           onApply={(paths) => { void autoTypeInbox.apply(paths) }}
           onCancel={autoTypeInbox.cancel}
+        />
+        <TasksDialog
+          open={vaultTasks.open}
+          loading={vaultTasks.loading}
+          groups={vaultTasks.groups}
+          showDone={vaultTasks.showDone}
+          onShowDoneChange={vaultTasks.setShowDone}
+          onToggle={(path, line) => { void vaultTasks.toggle(path, line) }}
+          onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
+          onClose={vaultTasks.cancel}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />
