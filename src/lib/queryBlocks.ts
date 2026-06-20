@@ -15,7 +15,7 @@ import type { VaultEntry } from '../types'
  *   fields: title, status, owner
  */
 
-export type QueryOperator = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'contains'
+export type QueryOperator = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'contains' | 'in' | 'exists' | 'empty'
 export type QueryRender = 'table' | 'list'
 export type SortDirection = 'asc' | 'desc'
 
@@ -61,9 +61,17 @@ function stripQuotes(value: string): string {
   return trimmed
 }
 
+const FIELD = '[\\p{L}\\p{N}_ .-]+?'
+
 function parseCondition(raw: string, errors: string[]): QueryCondition | null {
   const text = raw.trim()
   if (!text) return null
+  // Unary presence checks: "<field> exists" / "<field> empty".
+  const unary = text.match(new RegExp(`^(${FIELD})\\s+(exists|empty)$`, 'iu'))
+  if (unary) return { field: unary[1].trim().toLowerCase(), operator: unary[2].toLowerCase() as QueryOperator, value: '' }
+  // Membership: "<field> in a, b, c".
+  const inMatch = text.match(new RegExp(`^(${FIELD})\\s+in\\s+(.+)$`, 'iu'))
+  if (inMatch) return { field: inMatch[1].trim().toLowerCase(), operator: 'in', value: inMatch[2].trim() }
   for (const operator of OPERATORS) {
     const token = operator === 'contains' ? ' contains ' : operator
     const index = text.indexOf(token)
@@ -154,7 +162,14 @@ function stringifyValue(value: unknown): string | null {
 }
 
 function matches(entryValue: string | number | null, operator: QueryOperator, target: string): boolean {
+  const isBlank = entryValue === null || entryValue === ''
+  if (operator === 'exists') return !isBlank
+  if (operator === 'empty') return isBlank
   if (entryValue === null) return operator === '!='
+  if (operator === 'in') {
+    const options = target.split(',').map((value) => value.trim().toLowerCase()).filter(Boolean)
+    return options.includes(String(entryValue).toLowerCase())
+  }
   const left = typeof entryValue === 'number' ? entryValue : entryValue.toLowerCase()
   const rightNum = Number(target)
   const right = typeof entryValue === 'number' && Number.isFinite(rightNum) ? rightNum : target.toLowerCase()
@@ -166,6 +181,7 @@ function matches(entryValue: string | number | null, operator: QueryOperator, ta
     case '<': return left < right
     case '>=': return left >= right
     case '<=': return left <= right
+    default: return false
   }
 }
 

@@ -84,6 +84,18 @@ describe('evaluateQuery', () => {
     expect(result.map((e) => e.title).sort()).toEqual(['Alpha', 'Beta'])
   })
 
+  it('supports exists / empty / in operators', () => {
+    const mixed = [
+      entry({ path: '/v/a.md', title: 'A', isA: 'Project', status: 'Active', properties: { Owner: 'Luca' } }),
+      entry({ path: '/v/b.md', title: 'B', isA: 'Project', status: 'Done' }),
+      entry({ path: '/v/c.md', title: 'C', isA: 'Project', status: null, properties: { Owner: 'Mia' } }),
+    ]
+    expect(evaluateQuery(parseQuery('where: status empty'), mixed).map((e) => e.title)).toEqual(['C'])
+    expect(evaluateQuery(parseQuery('where: status exists'), mixed).map((e) => e.title).sort()).toEqual(['A', 'B'])
+    expect(evaluateQuery(parseQuery('where: owner empty'), mixed).map((e) => e.title)).toEqual(['B'])
+    expect(evaluateQuery(parseQuery('where: status in Active, Done'), mixed).map((e) => e.title).sort()).toEqual(['A', 'B'])
+  })
+
   it('groups results by a field with the empty group last', () => {
     const withStatus = [
       entry({ path: '/v/a.md', title: 'A', isA: 'Project', status: 'Active' }),
