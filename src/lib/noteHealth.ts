@@ -113,3 +113,14 @@ export function analyzeVaultHealth(entries: VaultEntry[], options: HealthOptions
 
   return { scanned: scannable.length, healthy, categories }
 }
+
+/** Serializes a health report as shareable markdown. */
+export function formatHealthReportMarkdown(report: VaultHealthReport): string {
+  const pct = report.scanned > 0 ? Math.round((report.healthy / report.scanned) * 100) : 100
+  const lines = ['# Vault health', '', `${report.healthy} of ${report.scanned} notes healthy (${pct}%).`]
+  for (const category of report.categories) {
+    lines.push('', `## ${category.label} (${category.notes.length})`)
+    for (const note of category.notes) lines.push(`- ${note.title || note.filename}`)
+  }
+  return `${lines.join('\n')}\n`
+}

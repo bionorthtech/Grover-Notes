@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeVaultStats } from './vaultStats'
+import { computeVaultStats, formatStatsMarkdown } from './vaultStats'
 import type { VaultEntry } from '../types'
 
 function entry(partial: Partial<VaultEntry> & { path: string }): VaultEntry {
@@ -53,5 +53,20 @@ describe('computeVaultStats', () => {
   it('handles an empty vault without dividing by zero', () => {
     const stats = computeVaultStats([], NOW)
     expect(stats).toMatchObject({ totalNotes: 0, totalWords: 0, avgOutgoingLinks: 0, byType: [] })
+  })
+})
+
+describe('formatStatsMarkdown', () => {
+  it('renders totals and a by-type list', () => {
+    const sample = [
+      entry({ path: '/v/a.md', isA: 'Project', outgoingLinks: ['B'] }),
+      entry({ path: '/v/b.md', isA: 'Project', outgoingLinks: ['A'] }),
+      entry({ path: '/v/c.md', isA: 'Person' }),
+    ]
+    const md = formatStatsMarkdown(computeVaultStats(sample, NOW))
+    expect(md).toContain('# Vault stats')
+    expect(md).toContain('- Notes: 3')
+    expect(md).toContain('## By type')
+    expect(md).toContain('- Project: 2')
   })
 })

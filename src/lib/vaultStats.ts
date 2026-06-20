@@ -64,3 +64,20 @@ export function computeVaultStats(entries: VaultEntry[], now: number = Date.now(
     brokenLinks: issueCount('broken-link'),
   }
 }
+
+/** Serializes vault stats as shareable markdown. */
+export function formatStatsMarkdown(stats: VaultStats): string {
+  const lines = [
+    '# Vault stats',
+    '',
+    `- Notes: ${stats.totalNotes}`,
+    `- Words: ${stats.totalWords.toLocaleString()}`,
+    `- New this week: ${stats.createdThisWeek}`,
+    `- Avg outgoing links: ${stats.avgOutgoingLinks}`,
+    `- Untyped: ${stats.untyped} · Orphans: ${stats.orphans} · Broken links: ${stats.brokenLinks}`,
+    '',
+    '## By type',
+    ...stats.byType.map((item) => `- ${item.type}: ${item.count}`),
+  ]
+  return `${lines.join('\n')}\n`
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeVaultHealth } from './noteHealth'
+import { analyzeVaultHealth, formatHealthReportMarkdown } from './noteHealth'
 import type { VaultEntry } from '../types'
 
 function entry(partial: Partial<VaultEntry> & { path: string }): VaultEntry {
@@ -69,5 +69,18 @@ describe('analyzeVaultHealth', () => {
     ]
     const report = analyzeVaultHealth(entries, { now: NOW })
     expect(report.categories.find((c) => c.kind === 'stub')).toBeUndefined()
+  })
+})
+
+describe('formatHealthReportMarkdown', () => {
+  it('renders a markdown summary with category sections', () => {
+    const entries = [
+      entry({ path: '/v/u.md', title: 'Untyped Note', isA: null, wordCount: 200, modifiedAt: recent, outgoingLinks: ['x'] }),
+      entry({ path: '/v/x.md', title: 'X', wordCount: 200, modifiedAt: recent, outgoingLinks: ['Untyped Note'] }),
+    ]
+    const md = formatHealthReportMarkdown(analyzeVaultHealth(entries, { now: NOW }))
+    expect(md).toContain('# Vault health')
+    expect(md).toMatch(/## Untyped \(1\)/)
+    expect(md).toContain('- Untyped Note')
   })
 })

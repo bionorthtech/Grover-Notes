@@ -7,7 +7,9 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { ScrollArea } from './ui/scroll-area'
-import { analyzeVaultHealth, type HealthCategory } from '../lib/noteHealth'
+import { Button } from './ui/button'
+import { analyzeVaultHealth, formatHealthReportMarkdown, type HealthCategory } from '../lib/noteHealth'
+import { writeClipboardText } from '../utils/clipboardText'
 import type { VaultEntry } from '../types'
 
 interface NoteHealthDialogProps {
@@ -75,6 +77,14 @@ function NoteHealthBody({ entries, onOpenNote }: Omit<NoteHealthDialogProps, 'op
           ))}
         </div>
       </ScrollArea>
+
+      {report.categories.length > 0 && (
+        <div className="flex justify-end border-t border-border pt-3">
+          <Button variant="ghost" className="h-7 px-2 text-xs" onClick={() => void writeClipboardText(formatHealthReportMarkdown(report))}>
+            Copy markdown
+          </Button>
+        </div>
+      )}
     </DialogContent>
   )
 }

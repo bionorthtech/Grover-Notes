@@ -7,8 +7,10 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { ScrollArea } from './ui/scroll-area'
+import { Button } from './ui/button'
 import { getTypeColor } from '../utils/typeColors'
-import { computeVaultStats } from '../lib/vaultStats'
+import { computeVaultStats, formatStatsMarkdown } from '../lib/vaultStats'
+import { writeClipboardText } from '../utils/clipboardText'
 import type { VaultEntry } from '../types'
 
 interface VaultStatsDialogProps {
@@ -60,12 +62,11 @@ function VaultStatsBody({ entries }: { entries: VaultEntry[] }) {
         </div>
       </ScrollArea>
 
-      <div className="flex flex-wrap gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-        <span>{stats.untyped} untyped</span>
-        <span aria-hidden>·</span>
-        <span>{stats.orphans} orphans</span>
-        <span aria-hidden>·</span>
-        <span>{stats.brokenLinks} broken links</span>
+      <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+        <span>{stats.untyped} untyped · {stats.orphans} orphans · {stats.brokenLinks} broken links</span>
+        <Button variant="ghost" className="h-7 px-2 text-xs" onClick={() => void writeClipboardText(formatStatsMarkdown(stats))}>
+          Copy markdown
+        </Button>
       </div>
     </DialogContent>
   )
