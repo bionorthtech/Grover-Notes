@@ -22,6 +22,7 @@ interface NavigationCommandsConfig {
   onShowTasks?: () => void
   onQueryNotes?: () => void
   onVaultHealth?: () => void
+  onVaultStats?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -100,6 +101,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onShowTasks,
     onQueryNotes,
     onVaultHealth,
+    onVaultStats,
   } = config
 
   return [
@@ -111,6 +113,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'show-tasks', label: 'Show all tasks', group: 'Navigation', keywords: ['task', 'tasks', 'todo', 'checkbox', 'todos', 'checklist'], enabled: !!onShowTasks, execute: () => onShowTasks?.() },
     { id: 'query-notes', label: 'Query notes', group: 'Navigation', keywords: ['query', 'filter', 'table', 'dataview', 'search', 'list', 'where'], enabled: !!onQueryNotes, execute: () => onQueryNotes?.() },
     { id: 'vault-health', label: 'Vault health report', group: 'Navigation', keywords: ['health', 'report', 'orphan', 'broken', 'stub', 'stale', 'untyped', 'audit', 'cleanup'], enabled: !!onVaultHealth, execute: () => onVaultHealth?.() },
+    { id: 'vault-stats', label: 'Vault stats', group: 'Navigation', keywords: ['stats', 'statistics', 'overview', 'dashboard', 'counts', 'metrics', 'insights'], enabled: !!onVaultStats, execute: () => onVaultStats?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },

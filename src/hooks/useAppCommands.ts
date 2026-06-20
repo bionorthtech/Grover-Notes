@@ -32,6 +32,7 @@ interface AppCommandsConfig {
   onShowTasks?: () => void
   onQueryNotes?: () => void
   onVaultHealth?: () => void
+  onVaultStats?: () => void
   onCommandPalette: () => void
   onSearch: () => void
   onFindInNote?: () => void
@@ -179,6 +180,7 @@ type CommandRegistryCoreActions = Pick<
   | 'onShowTasks'
   | 'onQueryNotes'
   | 'onVaultHealth'
+  | 'onVaultStats'
   | 'onCreateNote'
   | 'onCreateNoteOfType'
   | 'onSave'
@@ -498,6 +500,7 @@ function createCommandRegistryCoreConfig(
     onShowTasks: config.onShowTasks,
     onQueryNotes: config.onQueryNotes,
     onVaultHealth: config.onVaultHealth,
+    onVaultStats: config.onVaultStats,
     onCreateNote: config.onCreateNote,
     onCreateNoteOfType: config.onCreateNoteOfType,
     onSave: config.onSave,

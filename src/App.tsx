@@ -26,6 +26,7 @@ import { AutoTypeInboxDialog } from './components/AutoTypeInboxDialog'
 import { TasksDialog } from './components/TasksDialog'
 import { QueryDialog } from './components/QueryDialog'
 import { NoteHealthDialog } from './components/NoteHealthDialog'
+import { VaultStatsDialog } from './components/VaultStatsDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -649,6 +650,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
   const [dailyCalendarOpen, setDailyCalendarOpen] = useState(false)
   const [queryDialogOpen, setQueryDialogOpen] = useState(false)
   const [healthDialogOpen, setHealthDialogOpen] = useState(false)
+  const [statsDialogOpen, setStatsDialogOpen] = useState(false)
   const quickCapture = useQuickCapture({ onCapture: appendToDailyNote, toast: setToastMessage })
   const autoTypeInbox = useAutoTypeInbox({
     entries: visibleEntries,
@@ -1584,6 +1586,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onShowTasks: () => { void vaultTasks.requestTasks() },
     onQueryNotes: () => setQueryDialogOpen(true),
     onVaultHealth: () => setHealthDialogOpen(true),
+    onVaultStats: () => setStatsDialogOpen(true),
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
@@ -1978,6 +1981,11 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           entries={visibleEntries}
           onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
           onClose={() => setHealthDialogOpen(false)}
+        />
+        <VaultStatsDialog
+          open={statsDialogOpen}
+          entries={visibleEntries}
+          onClose={() => setStatsDialogOpen(false)}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />
