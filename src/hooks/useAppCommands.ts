@@ -31,6 +31,7 @@ interface AppCommandsConfig {
   onDailyRollup?: () => void
   onShowTasks?: () => void
   onQueryNotes?: () => void
+  onVaultHealth?: () => void
   onCommandPalette: () => void
   onSearch: () => void
   onFindInNote?: () => void
@@ -177,6 +178,7 @@ type CommandRegistryCoreActions = Pick<
   | 'onDailyRollup'
   | 'onShowTasks'
   | 'onQueryNotes'
+  | 'onVaultHealth'
   | 'onCreateNote'
   | 'onCreateNoteOfType'
   | 'onSave'
@@ -495,6 +497,7 @@ function createCommandRegistryCoreConfig(
     onDailyRollup: config.onDailyRollup,
     onShowTasks: config.onShowTasks,
     onQueryNotes: config.onQueryNotes,
+    onVaultHealth: config.onVaultHealth,
     onCreateNote: config.onCreateNote,
     onCreateNoteOfType: config.onCreateNoteOfType,
     onSave: config.onSave,
