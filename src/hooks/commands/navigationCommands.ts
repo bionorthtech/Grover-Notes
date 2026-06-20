@@ -24,6 +24,7 @@ interface NavigationCommandsConfig {
   onVaultHealth?: () => void
   onVaultStats?: () => void
   onFindDuplicates?: () => void
+  onFindRelated?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -104,6 +105,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onVaultHealth,
     onVaultStats,
     onFindDuplicates,
+    onFindRelated,
   } = config
 
   return [
@@ -117,6 +119,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'vault-health', label: 'Vault health report', group: 'Navigation', keywords: ['health', 'report', 'orphan', 'broken', 'stub', 'stale', 'untyped', 'audit', 'cleanup'], enabled: !!onVaultHealth, execute: () => onVaultHealth?.() },
     { id: 'vault-stats', label: 'Vault stats', group: 'Navigation', keywords: ['stats', 'statistics', 'overview', 'dashboard', 'counts', 'metrics', 'insights'], enabled: !!onVaultStats, execute: () => onVaultStats?.() },
     { id: 'find-duplicates', label: 'Find duplicate notes', group: 'Navigation', keywords: ['duplicate', 'duplicates', 'dupes', 'merge', 'same', 'title', 'cleanup'], enabled: !!onFindDuplicates, execute: () => onFindDuplicates?.() },
+    { id: 'find-related', label: 'Find related notes', group: 'Navigation', keywords: ['related', 'similar', 'connections', 'more like this', 'discover', 'suggest'], enabled: !!onFindRelated, execute: () => onFindRelated?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },
