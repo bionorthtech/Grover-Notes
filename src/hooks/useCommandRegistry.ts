@@ -70,6 +70,7 @@ interface CommandRegistryConfig {
   onQueryNotes?: () => void
   onVaultHealth?: () => void
   onVaultStats?: () => void
+  onFindDuplicates?: () => void
   onToggleFavorite?: (path: string) => void
   onToggleOrganized?: (path: string) => void
   onCustomizeNoteListColumns?: () => void
@@ -171,7 +172,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onSelect, onRenameFolder, onDeleteFolder, onRevealSelectedFolder, onCopySelectedFolderPath,
     showInbox,
     onGoBack, onGoForward, canGoBack, canGoForward,
-    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats,
+    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates,
     onCheckForUpdates, onCreateType,
     onRemoveActiveVault, onRestoreGettingStarted, isGettingStartedHidden, vaultCount,
     mcpStatus, onInstallMcp, aiFeaturesEnabled,
@@ -226,10 +227,11 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onQueryNotes,
     onVaultHealth,
     onVaultStats,
+    onFindDuplicates,
   }), [
     onQuickOpen, onSelect, selection, onRenameFolder, onDeleteFolder,
     onRevealSelectedFolder, onCopySelectedFolderPath, showInbox,
-    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats,
+    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates,
   ])
 
   const noteCommands = useMemo(() => buildNoteCommands({
