@@ -48,4 +48,13 @@ describe('QueryBlockView', () => {
     render(<QueryBlockView source="bogus line" entries={entries} onOpenNote={vi.fn()} />)
     expect(screen.getByText(/ignored line/i)).toBeInTheDocument()
   })
+
+  it('renders grouped sections with per-group counts when group is set', () => {
+    render(<QueryBlockView source={'from: Project\ngroup: status\nfields: title'} entries={entries} onOpenNote={vi.fn()} />)
+    // group headers (status is no longer a column, so these are unique)
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Done')).toBeInTheDocument()
+    expect(screen.getByText('Alpha')).toBeInTheDocument()
+    expect(screen.getByText('Beta')).toBeInTheDocument()
+  })
 })

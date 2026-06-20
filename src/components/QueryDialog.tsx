@@ -27,7 +27,7 @@ function QueryDialogBody({ entries, onOpenNote, onClose }: Omit<QueryDialogProps
       <DialogHeader>
         <DialogTitle>Query notes</DialogTitle>
         <DialogDescription>
-          Filter your vault live. Clauses: <code>from</code>, <code>where</code>, <code>sort</code>, <code>limit</code>, <code>as</code>, <code>fields</code>.
+          Filter your vault live. Clauses: <code>from</code>, <code>where</code>, <code>sort</code>, <code>group</code>, <code>limit</code>, <code>as</code>, <code>fields</code>.
         </DialogDescription>
       </DialogHeader>
 

@@ -34,6 +34,8 @@ export interface GroverQuery {
   limit: number | null
   render: QueryRender
   fields: string[]
+  /** Field to group results by, or null for a flat list. */
+  groupBy: string | null
   /** Non-fatal problems (unrecognised lines / conditions) for surfacing to the user. */
   errors: string[]
 }
@@ -48,6 +50,7 @@ const DEFAULT_QUERY: Omit<GroverQuery, 'errors'> = {
   limit: null,
   render: 'table',
   fields: ['title', 'type', 'status'],
+  groupBy: null,
 }
 
 function stripQuotes(value: string): string {
@@ -117,6 +120,7 @@ function applyClause(query: GroverQuery, key: string, value: string, errors: str
     case 'limit': { const n = Number(value); if (Number.isFinite(n) && n > 0) query.limit = Math.floor(n); else errors.push(`Invalid limit: "${value}"`); break }
     case 'as': query.render = value.toLowerCase() === 'list' ? 'list' : 'table'; break
     case 'fields': { const fields = parseList(value); if (fields.length > 0) query.fields = fields; break }
+    case 'group': case 'groupby': query.groupBy = value ? value.toLowerCase() : null; break
     default: errors.push(`Unknown clause: "${key}"`)
   }
 }
@@ -205,4 +209,39 @@ export function evaluateQuery(query: GroverQuery, entries: VaultEntry[], now: Da
     return query.sortDirection === 'desc' ? -result : result
   })
   return query.limit !== null ? sorted.slice(0, query.limit) : sorted
+}
+
+export interface QueryGroup {
+  key: string
+  notes: VaultEntry[]
+}
+
+const NO_GROUP_LABEL = 'None'
+
+function groupKeyFor(entry: VaultEntry, field: string): string {
+  const value = fieldValue(entry, field)
+  if (value === null || value === '') return NO_GROUP_LABEL
+  return String(value)
+}
+
+/**
+ * Evaluates a query and groups the results by `groupBy` (a single group when
+ * unset). Groups are sorted by key, with the empty "None" group last.
+ */
+export function groupResults(query: GroverQuery, entries: VaultEntry[], now: Date = new Date()): QueryGroup[] {
+  const rows = evaluateQuery(query, entries, now)
+  if (!query.groupBy) return [{ key: '', notes: rows }]
+  const groups = new Map<string, VaultEntry[]>()
+  for (const entry of rows) {
+    const key = groupKeyFor(entry, query.groupBy)
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(entry)
+  }
+  return [...groups.entries()]
+    .map(([key, notes]) => ({ key, notes }))
+    .sort((a, b) => {
+      if (a.key === NO_GROUP_LABEL) return 1
+      if (b.key === NO_GROUP_LABEL) return -1
+      return a.key.localeCompare(b.key)
+    })
 }

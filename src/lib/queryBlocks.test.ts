@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluateQuery, fieldValue, parseQuery } from './queryBlocks'
+import { evaluateQuery, fieldValue, groupResults, parseQuery } from './queryBlocks'
 import type { VaultEntry } from '../types'
 
 function entry(partial: Partial<VaultEntry> & { path: string }): VaultEntry {
@@ -82,6 +82,23 @@ describe('evaluateQuery', () => {
   it('supports numeric comparisons on dates', () => {
     const result = evaluateQuery(parseQuery('where: modified > 150'), entries)
     expect(result.map((e) => e.title).sort()).toEqual(['Alpha', 'Beta'])
+  })
+
+  it('groups results by a field with the empty group last', () => {
+    const withStatus = [
+      entry({ path: '/v/a.md', title: 'A', isA: 'Project', status: 'Active' }),
+      entry({ path: '/v/b.md', title: 'B', isA: 'Project', status: 'Done' }),
+      entry({ path: '/v/c.md', title: 'C', isA: 'Project', status: 'Active' }),
+      entry({ path: '/v/d.md', title: 'D', isA: 'Project', status: null }),
+    ]
+    const groups = groupResults(parseQuery('from: Project\ngroup: status'), withStatus)
+    expect(groups.map((g) => `${g.key}:${g.notes.length}`)).toEqual(['Active:2', 'Done:1', 'None:1'])
+  })
+
+  it('returns a single unkeyed group when group is unset', () => {
+    const groups = groupResults(parseQuery('from: Project'), entries)
+    expect(groups).toHaveLength(1)
+    expect(groups[0].key).toBe('')
   })
 
   it('resolves relative-date tokens like today', () => {
