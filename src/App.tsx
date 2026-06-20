@@ -1584,6 +1584,8 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onExportNoteAsPdf: activeDeletedFile ? undefined : exportNotePdfCommand,
     onSuggestLinks: activeDeletedFile ? undefined : suggestLinks.requestSuggestLinks,
     onOpenDailyNote: () => setDailyCalendarOpen(true),
+    onPrevDailyNote: () => { void dailyNotes.openAdjacent(-1) },
+    onNextDailyNote: () => { void dailyNotes.openAdjacent(1) },
     onQuickCapture: quickCapture.requestCapture,
     onAutoTypeInbox: aiFeaturesEnabled ? () => { void autoTypeInbox.requestAutoType() } : undefined,
     onDailyRollup: aiFeaturesEnabled ? () => { void handleDailyRollup() } : undefined,

@@ -25,6 +25,8 @@ interface NavigationCommandsConfig {
   onVaultStats?: () => void
   onFindDuplicates?: () => void
   onFindRelated?: () => void
+  onPrevDailyNote?: () => void
+  onNextDailyNote?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -106,11 +108,15 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onVaultStats,
     onFindDuplicates,
     onFindRelated,
+    onPrevDailyNote,
+    onNextDailyNote,
   } = config
 
   return [
     { id: 'search-notes', label: 'Search Notes', group: 'Navigation', shortcut: getAppCommandShortcutDisplay(APP_COMMAND_IDS.fileQuickOpen), keywords: ['find', 'open', 'quick'], enabled: true, execute: onQuickOpen },
     { id: 'open-daily-note', label: 'Open daily note…', group: 'Navigation', keywords: ['daily', 'today', 'journal', 'calendar', 'date', 'diary'], enabled: !!onOpenDailyNote, execute: () => onOpenDailyNote?.() },
+    { id: 'prev-daily-note', label: 'Previous daily note', group: 'Navigation', keywords: ['daily', 'previous', 'yesterday', 'back', 'journal'], enabled: !!onPrevDailyNote, execute: () => onPrevDailyNote?.() },
+    { id: 'next-daily-note', label: 'Next daily note', group: 'Navigation', keywords: ['daily', 'next', 'tomorrow', 'forward', 'journal'], enabled: !!onNextDailyNote, execute: () => onNextDailyNote?.() },
     { id: 'quick-capture', label: 'Quick capture', group: 'Navigation', keywords: ['capture', 'jot', 'inbox', 'note', 'quick', 'idea', 'todo'], enabled: !!onQuickCapture, execute: () => onQuickCapture?.() },
     { id: 'auto-type-inbox', label: 'Auto-type inbox notes (AI)', group: 'Navigation', keywords: ['ai', 'type', 'classify', 'inbox', 'organize', 'tag', 'auto'], enabled: !!onAutoTypeInbox, execute: () => onAutoTypeInbox?.() },
     { id: 'daily-rollup', label: 'Summarize today (AI rollup)', group: 'Navigation', keywords: ['ai', 'summary', 'rollup', 'today', 'daily', 'recap', 'digest'], enabled: !!onDailyRollup, execute: () => onDailyRollup?.() },
