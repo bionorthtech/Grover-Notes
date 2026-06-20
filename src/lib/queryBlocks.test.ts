@@ -83,4 +83,15 @@ describe('evaluateQuery', () => {
     const result = evaluateQuery(parseQuery('where: modified > 150'), entries)
     expect(result.map((e) => e.title).sort()).toEqual(['Alpha', 'Beta'])
   })
+
+  it('resolves relative-date tokens like today', () => {
+    const now = new Date(2026, 5, 16, 9, 0, 0)
+    const todayStart = Math.floor(new Date(2026, 5, 16).getTime() / 1000)
+    const dated = [
+      entry({ path: '/v/today.md', title: 'Today', isA: 'Note', modifiedAt: todayStart + 3600 }),
+      entry({ path: '/v/old.md', title: 'Old', isA: 'Note', modifiedAt: todayStart - 3600 }),
+    ]
+    const result = evaluateQuery(parseQuery('where: modified >= today'), dated, now)
+    expect(result.map((e) => e.title)).toEqual(['Today'])
+  })
 })

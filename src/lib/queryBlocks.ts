@@ -173,13 +173,32 @@ function compare(a: string | number | null, b: string | number | null): number {
   return String(a).localeCompare(String(b))
 }
 
+const DATE_FIELDS = new Set(['modified', 'modifiedat', 'created', 'createdat'])
+
+/** Resolves relative-date tokens (today/yesterday/now) to epoch-second strings
+ *  for date-field comparisons; leaves other values untouched. */
+export function resolveConditionValue(field: string, value: string, now: Date): string {
+  if (!DATE_FIELDS.has(field)) return value
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000
+  switch (value.trim().toLowerCase()) {
+    case 'today': return String(Math.floor(startOfDay))
+    case 'yesterday': return String(Math.floor(startOfDay - 86400))
+    case 'now': return String(Math.floor(now.getTime() / 1000))
+    default: return value
+  }
+}
+
 /** Runs a parsed query against the vault entries (excludes Type defs + archived). */
-export function evaluateQuery(query: GroverQuery, entries: VaultEntry[]): VaultEntry[] {
+export function evaluateQuery(query: GroverQuery, entries: VaultEntry[], now: Date = new Date()): VaultEntry[] {
   const fromKey = query.from?.toLowerCase() ?? null
+  const resolvedConditions = query.conditions.map((condition) => ({
+    ...condition,
+    value: resolveConditionValue(condition.field, condition.value, now),
+  }))
   const filtered = entries.filter((entry) => {
     if (entry.archived || entry.isA === 'Type') return false
     if (fromKey && (entry.isA ?? '').toLowerCase() !== fromKey) return false
-    return query.conditions.every((condition) => matches(fieldValue(entry, condition.field), condition.operator, condition.value))
+    return resolvedConditions.every((condition) => matches(fieldValue(entry, condition.field), condition.operator, condition.value))
   })
   const sorted = filtered.sort((a, b) => {
     const result = compare(fieldValue(a, query.sortField), fieldValue(b, query.sortField))
