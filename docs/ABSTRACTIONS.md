@@ -958,3 +958,53 @@ Managed by `useSettings` hook and `SettingsPanel` component. `theme_mode` is ins
 - **`.github/workflows/release.yml`** — Alpha prereleases from every push to `main` using calendar-semver technical versions (`YYYY.M.D-alpha.N`) and clean `Alpha YYYY.M.D.N` release names. GitHub alpha tags zero-pad the prerelease sequence (`alpha-vYYYY.M.D-alpha.NNNN`) so GitHub release ordering stays chronological while the shipped app version remains `YYYY.M.D-alpha.N`. Publishes `alpha/latest.json` with macOS Apple Silicon/Intel, Linux x64, and Windows x64 updater entries, then refreshes the legacy `latest.json` / `latest-canary.json` aliases to the alpha feed. The Windows job builds NSIS with Tauri updater signatures and uses Authenticode signing plus `Get-AuthenticodeSignature` verification when CI certificate secrets are configured; stable remains the strict channel for mandatory Authenticode enforcement. The Linux job uses Tauri's stock linuxdeploy AppImage output plugin and validates that installer and updater-signature artifacts exist before upload. The docs/release Pages job reads the stable manifest from the latest stable release asset instead of copying the live Pages URL, uploads the built site as a Pages artifact, and deploys it with GitHub's official Pages action so the public updater JSON changes as part of the release workflow. Changes to the shared artifact workflow are not ignored by the alpha trigger, so release-pipeline fixes produce a fresh alpha run. macOS release assets use `Grover_<version>_macOS_Silicon` and `Grover_<version>_macOS_Intel` base names. Packaged builds pass the computed version as `VITE_SENTRY_RELEASE`, which is retained as a diagnostic build-version tag but not registered as a normal Sentry release for alpha builds.
 - **`.github/workflows/release-stable.yml`** — Stable releases from `stable-vYYYY.M.D` tags. Publishes `stable/latest.json`, macOS Apple Silicon and Intel DMG/updater artifacts, Authenticode-signed Windows x64 installers plus Tauri-signed updater bundles, Linux x86_64 `.deb` / `.rpm` / AppImage artifacts, and a static public download page that starts selected non-Windows installers without replacing the page with a blank download navigation. Windows visitors see an explicit signed-installer action and managed-device approval guidance instead of an automatic download. Linux visitors default to the AppImage target while the page exposes RPM as a manual Linux package option when the stable release includes one. The Linux job uses the same stock Tauri/linuxdeploy AppImage packaging and artifact validation as alpha releases. The Pages job reads the alpha manifest from the latest alpha release asset instead of copying the live Pages URL, uploads the built site as a Pages artifact, and deploys it with GitHub's official Pages action so stable and alpha manifests stay fresh. Stable macOS DMG/updater assets use the same `Grover_<version>_macOS_Silicon` and `Grover_<version>_macOS_Intel` base names. Packaged builds pass the computed stable version as `VITE_SENTRY_RELEASE`, which is registered as Sentry's release.
 - **Beta cohorts** are handled in PostHog targeting only. There is no beta updater feed.
+
+---
+
+## Vault Intelligence & Productivity
+
+A suite of mostly-pure, well-tested modules that read the data already on
+`VaultEntry[]` (and the AI substrate) to surface insight and reduce friction.
+Most are surfaced as command-palette commands that open a focused dialog.
+
+### Query engine (`src/lib/queryBlocks.ts`)
+- A small line-based DSL — `from / where / sort / group / limit / as / fields` —
+  parsed by `parseQuery`, evaluated by `evaluateQuery`, grouped by `groupResults`.
+  `fieldValue` resolves built-ins + dynamic frontmatter/relationships; relative
+  dates (`today/yesterday/now`) resolve on date fields. See ADR 0137.
+- **`QueryBlockView`** renders results as a live table/list (grouped sections when
+  `group` is set). **`QueryDialog`** ("Query notes") is a live runner.
+
+### Vault reports
+- **`noteHealth.ts` / `NoteHealthDialog`** ("Vault health report") — groups notes
+  by fixable issue (untyped, missing-h1, stub, stale, orphan, broken-link) from
+  `hasH1`, `wordCount`, `isA`, `modifiedAt`, resolved `outgoingLinks`.
+- **`vaultStats.ts` / `VaultStatsDialog`** ("Vault stats") — totals, words,
+  created-this-week, avg outgoing links, by-type breakdown, reusing health counts.
+- **`duplicateNotes.ts` / `DuplicateNotesDialog`** ("Find duplicate notes") —
+  groups notes by normalized title.
+- **`relatedNotes.ts` / `RelatedNotesDialog`** ("Find related notes", active-note)
+  — scores other notes by shared links, direct links, same type, shared relations.
+- **`taskAggregation.ts` / `useVaultTasks` / `TasksDialog`** ("Show all tasks") —
+  aggregates `- [ ]` checkbox tasks across notes, checkable in place (writes back).
+
+### Capture & daily flow
+- **`dailyNotes.ts` / `useDailyNotes` / `DailyNoteCalendarDialog`** — one note per
+  day at `Daily Notes/yyyy-MM-dd.md`; calendar picker marks days that have notes.
+- **`useQuickCapture` / `QuickCaptureDialog`** — appends a timestamped line to
+  today's daily note (creating it if needed).
+- **`unlinkedMentions.ts` / `useSuggestLinks` / `SuggestLinksDialog`** — finds
+  plain-text mentions of other notes and adds them to `related_to`.
+
+### AI features (CLI agent *or* API model, via the one-shot runner)
+- **`aiTask.ts`** — `runAiText` / `runAiStructured<T>` wrap the streaming
+  transports (`streamAiAgent` / `streamAiModel`) into buffered one-shot calls
+  routed by the user's `AiTarget`; `extractJson` tolerates fenced/prose output.
+- **`autoTypeInbox.ts` / `useAutoTypeInbox` / `AutoTypeInboxDialog`** — classifies
+  untyped inbox notes against the vault's types; review + apply via frontmatter.
+- **`dailyRollup.ts`** — summarizes today's changed notes into the daily note.
+
+### Shared I/O
+- **`src/lib/noteContentIo.ts`** — `readNoteContent` / `saveNoteContent` wrap the
+  `get_note_content` / `save_note_content` Tauri commands (mock-aware) for
+  features that read+write note bodies outside the editor.
