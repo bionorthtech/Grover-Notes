@@ -1979,6 +1979,9 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         <QueryDialog
           open={queryDialogOpen}
           entries={visibleEntries}
+          savedQueries={vaultConfig.savedQueries ?? []}
+          onSaveQuery={(name, source) => updateConfig('savedQueries', [...(vaultConfig.savedQueries ?? []).filter((q) => q.name !== name), { name, source }])}
+          onDeleteQuery={(name) => updateConfig('savedQueries', (vaultConfig.savedQueries ?? []).filter((q) => q.name !== name))}
           onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
           onClose={() => setQueryDialogOpen(false)}
         />

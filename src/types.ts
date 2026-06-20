@@ -214,6 +214,12 @@ export interface VaultConfig {
   property_display_modes: Record<string, string> | null
   inbox?: InboxConfig | null
   allNotes?: AllNotesConfig | null
+  savedQueries?: SavedQuery[] | null
+}
+
+export interface SavedQuery {
+  name: string
+  source: string
 }
 
 export interface PulseFile {
