@@ -30,6 +30,7 @@ interface AppCommandsConfig {
   onAutoTypeInbox?: () => void
   onDailyRollup?: () => void
   onShowTasks?: () => void
+  onQueryNotes?: () => void
   onCommandPalette: () => void
   onSearch: () => void
   onFindInNote?: () => void
@@ -175,6 +176,7 @@ type CommandRegistryCoreActions = Pick<
   | 'onAutoTypeInbox'
   | 'onDailyRollup'
   | 'onShowTasks'
+  | 'onQueryNotes'
   | 'onCreateNote'
   | 'onCreateNoteOfType'
   | 'onSave'
@@ -492,6 +494,7 @@ function createCommandRegistryCoreConfig(
     onAutoTypeInbox: config.onAutoTypeInbox,
     onDailyRollup: config.onDailyRollup,
     onShowTasks: config.onShowTasks,
+    onQueryNotes: config.onQueryNotes,
     onCreateNote: config.onCreateNote,
     onCreateNoteOfType: config.onCreateNoteOfType,
     onSave: config.onSave,

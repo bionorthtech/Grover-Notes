@@ -20,6 +20,7 @@ interface NavigationCommandsConfig {
   onAutoTypeInbox?: () => void
   onDailyRollup?: () => void
   onShowTasks?: () => void
+  onQueryNotes?: () => void
 }
 
 interface FolderCommandsConfig {
@@ -96,6 +97,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onAutoTypeInbox,
     onDailyRollup,
     onShowTasks,
+    onQueryNotes,
   } = config
 
   return [
@@ -105,6 +107,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'auto-type-inbox', label: 'Auto-type inbox notes (AI)', group: 'Navigation', keywords: ['ai', 'type', 'classify', 'inbox', 'organize', 'tag', 'auto'], enabled: !!onAutoTypeInbox, execute: () => onAutoTypeInbox?.() },
     { id: 'daily-rollup', label: 'Summarize today (AI rollup)', group: 'Navigation', keywords: ['ai', 'summary', 'rollup', 'today', 'daily', 'recap', 'digest'], enabled: !!onDailyRollup, execute: () => onDailyRollup?.() },
     { id: 'show-tasks', label: 'Show all tasks', group: 'Navigation', keywords: ['task', 'tasks', 'todo', 'checkbox', 'todos', 'checklist'], enabled: !!onShowTasks, execute: () => onShowTasks?.() },
+    { id: 'query-notes', label: 'Query notes', group: 'Navigation', keywords: ['query', 'filter', 'table', 'dataview', 'search', 'list', 'where'], enabled: !!onQueryNotes, execute: () => onQueryNotes?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },
