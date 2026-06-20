@@ -5,6 +5,7 @@ type Translate = ReturnType<typeof createTranslator>
 
 const GROUP_LABEL_KEYS = {
   Navigation: 'command.group.navigation',
+  Insights: 'command.group.insights',
   Note: 'command.group.note',
   Git: 'command.group.git',
   View: 'command.group.view',
