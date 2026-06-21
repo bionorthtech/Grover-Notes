@@ -10,6 +10,8 @@ import { Textarea } from './ui/textarea'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { QueryBlockView } from './QueryBlockView'
+import { QueryBuilderPanel } from './QueryBuilderPanel'
+import { extractVaultTypes } from '../utils/vaultTypes'
 import type { SavedQuery, VaultEntry } from '../types'
 
 interface QueryDialogProps {
@@ -43,6 +45,8 @@ function SavedQueryChips({ saved, onLoad, onDelete }: { saved: SavedQuery[]; onL
 function QueryDialogBody({ entries, savedQueries, onSaveQuery, onDeleteQuery, onOpenNote, onClose }: Omit<QueryDialogProps, 'open'>) {
   const [source, setSource] = useState(savedQueries[0]?.source ?? EXAMPLE_QUERY)
   const [name, setName] = useState('')
+  const [mode, setMode] = useState<'write' | 'build'>('write')
+  const types = extractVaultTypes(entries).filter((type) => type !== 'Type')
 
   const save = () => {
     const trimmed = name.trim()
@@ -60,15 +64,33 @@ function QueryDialogBody({ entries, savedQueries, onSaveQuery, onDeleteQuery, on
         </DialogDescription>
       </DialogHeader>
 
-      <SavedQueryChips saved={savedQueries} onLoad={(q) => setSource(q.source)} onDelete={onDeleteQuery} />
+      <div className="flex items-center justify-between">
+        <SavedQueryChips saved={savedQueries} onLoad={(q) => { setSource(q.source); setMode('write') }} onDelete={onDeleteQuery} />
+        <div className="ml-auto flex shrink-0 overflow-hidden rounded-md border border-border text-xs">
+          {(['write', 'build'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={`px-2.5 py-1 capitalize transition-colors ${mode === m ? 'bg-[var(--accent-blue)] text-white' : 'text-muted-foreground hover:bg-[var(--state-hover)]'}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <Textarea
-        value={source}
-        onChange={(event) => setSource(event.target.value)}
-        spellCheck={false}
-        className="min-h-[120px] resize-none font-mono text-xs"
-        aria-label="Query"
-      />
+      {mode === 'build' ? (
+        <QueryBuilderPanel types={types} onChange={setSource} />
+      ) : (
+        <Textarea
+          value={source}
+          onChange={(event) => setSource(event.target.value)}
+          spellCheck={false}
+          className="min-h-[120px] resize-none font-mono text-xs"
+          aria-label="Query"
+        />
+      )}
 
       <div className="flex items-center gap-2">
         <Input
