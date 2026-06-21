@@ -57,6 +57,8 @@ import { runAiStructured, resolveTaskTarget } from './lib/aiTask'
 import { buildAutoTypePrompt, autoTypeSystemPrompt, isTypeSuggestion } from './lib/autoTypeInbox'
 import { runAiText } from './lib/aiTask'
 import { selectTodaysChangedNotes, buildRollupPrompt, rollupSystemPrompt, formatRollupSection } from './lib/dailyRollup'
+import { computeVaultStats, formatStatsMarkdown } from './lib/vaultStats'
+import { analyzeVaultHealth, formatHealthReportMarkdown } from './lib/noteHealth'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
@@ -641,6 +643,28 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
       setToastMessage('Could not generate the rollup.')
     }
   }, [visibleEntries, settings, resolvedPath, appendToTodayNote])
+  const handleSaveVaultReport = useCallback(async () => {
+    const date = dailyNoteTitle(startOfToday())
+    const body = `---\ntitle: Vault Report ${date}\ntype: Note\n---\n\n# Vault Report — ${date}\n\n`
+      + `${formatStatsMarkdown(computeVaultStats(visibleEntries))}\n${formatHealthReportMarkdown(analyzeVaultHealth(visibleEntries))}`
+    const fullPath = joinVaultPath(resolvedPath, `Reports/vault-report-${date}.md`)
+    try {
+      const existing = findByNotePath(visibleEntries, fullPath)
+      if (existing) {
+        await saveNoteContent(fullPath, body, resolvedPath)
+        cacheNoteContent(fullPath, body, existing)
+        updateVaultEntry(fullPath, { modifiedAt: Math.floor(Date.now() / 1000) })
+        handleSelectNote(existing)
+      } else {
+        const entry = buildNewEntry({ path: fullPath, slug: `vault-report-${date}`, title: `Vault Report ${date}`, type: 'Note', status: null })
+        await persistAndOpenNote(entry, body)
+      }
+      trackEvent('vault_report_saved')
+      setToastMessage('Saved vault report.')
+    } catch {
+      setToastMessage('Could not save the vault report.')
+    }
+  }, [visibleEntries, resolvedPath, updateVaultEntry, handleSelectNote, persistAndOpenNote])
   const dailyNotes = useDailyNotes({
     vaultPath: resolvedPath,
     entries: visibleEntries,
@@ -1595,6 +1619,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onVaultStats: () => setStatsDialogOpen(true),
     onFindDuplicates: () => setDuplicatesDialogOpen(true),
     onFindRelated: activeTab?.entry ? () => setRelatedDialogOpen(true) : undefined,
+    onSaveVaultReport: () => { void handleSaveVaultReport() },
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,

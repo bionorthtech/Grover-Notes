@@ -35,6 +35,7 @@ interface AppCommandsConfig {
   onVaultStats?: () => void
   onFindDuplicates?: () => void
   onFindRelated?: () => void
+  onSaveVaultReport?: () => void
   onPrevDailyNote?: () => void
   onNextDailyNote?: () => void
   onCommandPalette: () => void
@@ -187,6 +188,7 @@ type CommandRegistryCoreActions = Pick<
   | 'onVaultStats'
   | 'onFindDuplicates'
   | 'onFindRelated'
+  | 'onSaveVaultReport'
   | 'onPrevDailyNote'
   | 'onNextDailyNote'
   | 'onCreateNote'
@@ -511,6 +513,7 @@ function createCommandRegistryCoreConfig(
     onVaultStats: config.onVaultStats,
     onFindDuplicates: config.onFindDuplicates,
     onFindRelated: config.onFindRelated,
+    onSaveVaultReport: config.onSaveVaultReport,
     onPrevDailyNote: config.onPrevDailyNote,
     onNextDailyNote: config.onNextDailyNote,
     onCreateNote: config.onCreateNote,

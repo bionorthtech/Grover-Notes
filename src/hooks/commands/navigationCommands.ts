@@ -25,6 +25,7 @@ interface NavigationCommandsConfig {
   onVaultStats?: () => void
   onFindDuplicates?: () => void
   onFindRelated?: () => void
+  onSaveVaultReport?: () => void
   onPrevDailyNote?: () => void
   onNextDailyNote?: () => void
 }
@@ -108,6 +109,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onVaultStats,
     onFindDuplicates,
     onFindRelated,
+    onSaveVaultReport,
     onPrevDailyNote,
     onNextDailyNote,
   } = config
@@ -126,6 +128,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'vault-stats', label: 'Vault stats', group: 'Insights', keywords: ['stats', 'statistics', 'overview', 'dashboard', 'counts', 'metrics', 'insights'], enabled: !!onVaultStats, execute: () => onVaultStats?.() },
     { id: 'find-duplicates', label: 'Find duplicate notes', group: 'Insights', keywords: ['duplicate', 'duplicates', 'dupes', 'merge', 'same', 'title', 'cleanup'], enabled: !!onFindDuplicates, execute: () => onFindDuplicates?.() },
     { id: 'find-related', label: 'Find related notes', group: 'Insights', keywords: ['related', 'similar', 'connections', 'more like this', 'discover', 'suggest'], enabled: !!onFindRelated, execute: () => onFindRelated?.() },
+    { id: 'save-vault-report', label: 'Save vault report', group: 'Insights', keywords: ['report', 'snapshot', 'export', 'stats', 'health', 'audit'], enabled: !!onSaveVaultReport, execute: () => onSaveVaultReport?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },

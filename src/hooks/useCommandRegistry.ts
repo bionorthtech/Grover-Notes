@@ -72,6 +72,7 @@ interface CommandRegistryConfig {
   onVaultStats?: () => void
   onFindDuplicates?: () => void
   onFindRelated?: () => void
+  onSaveVaultReport?: () => void
   onPrevDailyNote?: () => void
   onNextDailyNote?: () => void
   onToggleFavorite?: (path: string) => void
@@ -175,7 +176,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onSelect, onRenameFolder, onDeleteFolder, onRevealSelectedFolder, onCopySelectedFolderPath,
     showInbox,
     onGoBack, onGoForward, canGoBack, canGoForward,
-    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onPrevDailyNote, onNextDailyNote,
+    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onPrevDailyNote, onNextDailyNote,
     onCheckForUpdates, onCreateType,
     onRemoveActiveVault, onRestoreGettingStarted, isGettingStartedHidden, vaultCount,
     mcpStatus, onInstallMcp, aiFeaturesEnabled,
@@ -232,12 +233,13 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onVaultStats,
     onFindDuplicates,
     onFindRelated,
+    onSaveVaultReport,
     onPrevDailyNote,
     onNextDailyNote,
   }), [
     onQuickOpen, onSelect, selection, onRenameFolder, onDeleteFolder,
     onRevealSelectedFolder, onCopySelectedFolderPath, showInbox,
-    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onPrevDailyNote, onNextDailyNote,
+    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onPrevDailyNote, onNextDailyNote,
   ])
 
   const noteCommands = useMemo(() => buildNoteCommands({
