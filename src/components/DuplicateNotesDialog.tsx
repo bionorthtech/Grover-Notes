@@ -34,7 +34,7 @@ function DuplicateNotesBody({ entries, onOpenNote }: Omit<DuplicateNotesDialogPr
         <DialogTitle>Duplicate notes</DialogTitle>
         <DialogDescription>
           {groups.length === 0
-            ? 'No duplicate titles found. ✨'
+            ? 'No duplicate titles found.'
             : `${totalDuplicates} notes share a title across ${groups.length} ${groups.length === 1 ? 'group' : 'groups'}.`}
         </DialogDescription>
       </DialogHeader>

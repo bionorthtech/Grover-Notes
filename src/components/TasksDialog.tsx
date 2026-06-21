@@ -74,7 +74,7 @@ export function TasksDialog({ open, loading, groups, showDone, onShowDoneChange,
 
           <ScrollArea className="max-h-[420px] pr-2">
             {loading ? null : groups.length === 0 ? (
-              <div className="py-3 text-sm text-muted-foreground">No open tasks. Nice and clear. ✨</div>
+              <div className="py-3 text-sm text-muted-foreground">No open tasks. Nice and clear.</div>
             ) : (
               <div className="space-y-3">
                 {groups.map((group) => (

@@ -66,7 +66,7 @@ function NoteHealthBody({ entries, onOpenNote }: Omit<NoteHealthDialogProps, 'op
         <DialogTitle>Vault health</DialogTitle>
         <DialogDescription>
           {report.healthy} of {report.scanned} notes look healthy ({healthyPct}%).
-          {report.categories.length > 0 ? ' Expand a category to review and fix.' : ' Nothing needs attention. ✨'}
+          {report.categories.length > 0 ? ' Expand a category to review and fix.' : ' Nothing needs attention.'}
         </DialogDescription>
       </DialogHeader>
 
