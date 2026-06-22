@@ -757,6 +757,15 @@ The vault backend (`src-tauri/src/vault/`) is split into focused submodules:
 | `get_vault_ai_guidance_status` | Report whether `AGENTS.md`, `CLAUDE.md`, and optional `GEMINI.md` guidance are managed, missing, broken, or custom |
 | `restore_vault_ai_guidance` | Restore any missing/broken Grover-managed guidance files without overwriting custom ones |
 
+### Archival ingest (ADR 0138)
+
+| Command | Description |
+|---------|-------------|
+| `ingest_fetch` | Fetch a public http(s) URL's body as text (reqwest blocking, descriptive User-Agent — Reddit/forums reject the default and browser fetch hits CORS). Scheme-validated; runs off the async runtime. |
+| `ingest_download_assets` | Download a Source note's asset URLs into `<vault>/<dest_dir>`, returning saved filenames (index-aligned with inputs). Sanitizes filenames against path traversal; skips individual failures. |
+
+Transforms are pure TS in `src/lib/ingest/` (Reddit `.json`, Discord/DiscordChatExporter, Discourse, web-clip HTML→markdown), detected by `detectAndTransform`. The Import dialog can fetch a URL or accept pasted JSON/HTML; on import, assets are downloaded and `rewriteAssetUrls` swaps remote URLs for local copies so the archive re-reads offline. Imported notes land in `Sources/` as typed Source notes with provenance frontmatter.
+
 ### Frontmatter
 
 | Command | Description |
