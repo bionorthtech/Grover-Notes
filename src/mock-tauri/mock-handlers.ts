@@ -496,6 +496,10 @@ export const mockHandlers: Record<string, (args: any) => any> = {
     kiro: { installed: false, version: null },
   }),
   get_agent_docs_path: () => '/mock/Grover/resources/agent-docs',
+  ingest_fetch: () => {
+    throw new Error('Fetching URLs requires the native app. Paste the content instead.')
+  },
+  ingest_download_assets: (): string[] => [],
   get_vault_ai_guidance_status: () => ({ ...mockVaultAiGuidanceStatus }),
   restore_vault_ai_guidance: () => {
     mockVaultAiGuidanceStatus = {
