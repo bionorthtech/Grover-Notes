@@ -27,7 +27,7 @@ function ImportSourceBody({ onImport, onCancel }: Omit<ImportSourceDialogProps, 
       <DialogHeader>
         <DialogTitle>Import source</DialogTitle>
         <DialogDescription>
-          Archive external content as a typed note. Paste a Reddit thread’s <code>.json</code> or a Discord export (JSON).
+          Archive external content as a typed note. Paste a Reddit thread’s <code>.json</code>, a Discord/forum export (JSON), or an article’s HTML.
         </DialogDescription>
       </DialogHeader>
 
