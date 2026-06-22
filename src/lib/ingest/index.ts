@@ -11,6 +11,7 @@ export { discordExportToSourceNote } from './discord'
 export { discourseToSourceNote } from './discourse'
 export { webClipToSourceNote } from './web'
 export { htmlToMarkdown } from './html'
+export { rewriteAssetUrls } from './assets'
 
 export type DetectResult =
   | { ok: true; note: SourceNote }

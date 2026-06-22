@@ -60,7 +60,8 @@ import { runAiText } from './lib/aiTask'
 import { selectTodaysChangedNotes, buildRollupPrompt, rollupSystemPrompt, formatRollupSection } from './lib/dailyRollup'
 import { computeVaultStats, formatStatsMarkdown } from './lib/vaultStats'
 import { analyzeVaultHealth, formatHealthReportMarkdown } from './lib/noteHealth'
-import { buildSourceNoteMarkdown, sourceSlug, sourceTypeLabel, type SourceNote } from './lib/ingest'
+import { buildSourceNoteMarkdown, rewriteAssetUrls, sourceSlug, sourceTypeLabel, type SourceNote } from './lib/ingest'
+import { downloadAssets } from './lib/ingest/fetchUrl'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
@@ -672,7 +673,9 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     setImportDialogOpen(false)
     const slug = sourceSlug(note.source, note.title)
     const fullPath = joinVaultPath(resolvedPath, `Sources/${slug}.md`)
-    const content = buildSourceNoteMarkdown(note, new Date().toISOString())
+    const savedNames = await downloadAssets(resolvedPath, `Sources/_assets/${slug}`, note.assets)
+    const body = rewriteAssetUrls(note.body, note.assets, savedNames, `_assets/${slug}`)
+    const content = buildSourceNoteMarkdown({ ...note, body }, new Date().toISOString())
     try {
       const existing = findByNotePath(visibleEntries, fullPath)
       if (existing) {
@@ -684,7 +687,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         const entry = buildNewEntry({ path: fullPath, slug, title: note.title, type: sourceTypeLabel(note.source), status: null })
         await persistAndOpenNote(entry, content)
       }
-      trackEvent('source_imported', { source: note.source, assets: note.assets.length })
+      trackEvent('source_imported', { source: note.source, assets: note.assets.length, savedAssets: savedNames.length })
       setToastMessage(`Imported ${sourceTypeLabel(note.source)}.`)
     } catch {
       setToastMessage('Could not import the source.')
