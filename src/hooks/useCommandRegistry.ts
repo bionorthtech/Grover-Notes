@@ -73,6 +73,7 @@ interface CommandRegistryConfig {
   onFindDuplicates?: () => void
   onFindRelated?: () => void
   onSaveVaultReport?: () => void
+  onImportSource?: () => void
   onPrevDailyNote?: () => void
   onNextDailyNote?: () => void
   onToggleFavorite?: (path: string) => void
@@ -176,7 +177,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onSelect, onRenameFolder, onDeleteFolder, onRevealSelectedFolder, onCopySelectedFolderPath,
     showInbox,
     onGoBack, onGoForward, canGoBack, canGoForward,
-    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onPrevDailyNote, onNextDailyNote,
+    onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onImportSource, onPrevDailyNote, onNextDailyNote,
     onCheckForUpdates, onCreateType,
     onRemoveActiveVault, onRestoreGettingStarted, isGettingStartedHidden, vaultCount,
     mcpStatus, onInstallMcp, aiFeaturesEnabled,
@@ -234,12 +235,13 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onFindDuplicates,
     onFindRelated,
     onSaveVaultReport,
+    onImportSource,
     onPrevDailyNote,
     onNextDailyNote,
   }), [
     onQuickOpen, onSelect, selection, onRenameFolder, onDeleteFolder,
     onRevealSelectedFolder, onCopySelectedFolderPath, showInbox,
-    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onPrevDailyNote, onNextDailyNote,
+    onGoBack, onGoForward, canGoBack, canGoForward, onOpenDailyNote, onQuickCapture, onAutoTypeInbox, onDailyRollup, onShowTasks, onQueryNotes, onVaultHealth, onVaultStats, onFindDuplicates, onFindRelated, onSaveVaultReport, onImportSource, onPrevDailyNote, onNextDailyNote,
   ])
 
   const noteCommands = useMemo(() => buildNoteCommands({

@@ -29,6 +29,7 @@ import { NoteHealthDialog } from './components/NoteHealthDialog'
 import { VaultStatsDialog } from './components/VaultStatsDialog'
 import { DuplicateNotesDialog } from './components/DuplicateNotesDialog'
 import { RelatedNotesDialog } from './components/RelatedNotesDialog'
+import { ImportSourceDialog } from './components/ImportSourceDialog'
 import { McpSetupDialog } from './components/McpSetupDialog'
 import { NoteRetargetingDialogs } from './components/note-retargeting/NoteRetargetingDialogs'
 import { StartupScreen } from './components/StartupScreen'
@@ -59,6 +60,7 @@ import { runAiText } from './lib/aiTask'
 import { selectTodaysChangedNotes, buildRollupPrompt, rollupSystemPrompt, formatRollupSection } from './lib/dailyRollup'
 import { computeVaultStats, formatStatsMarkdown } from './lib/vaultStats'
 import { analyzeVaultHealth, formatHealthReportMarkdown } from './lib/noteHealth'
+import { buildSourceNoteMarkdown, sourceSlug, sourceTypeLabel, type SourceNote } from './lib/ingest'
 import { persistNewNote, buildNewEntry } from './hooks/useNoteCreation'
 import { cacheNoteContent } from './hooks/useTabManagement'
 import { readNoteContent, saveNoteContent } from './lib/noteContentIo'
@@ -665,6 +667,29 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
       setToastMessage('Could not save the vault report.')
     }
   }, [visibleEntries, resolvedPath, updateVaultEntry, handleSelectNote, persistAndOpenNote])
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const importSource = async (note: SourceNote) => {
+    setImportDialogOpen(false)
+    const slug = sourceSlug(note.source, note.title)
+    const fullPath = joinVaultPath(resolvedPath, `Sources/${slug}.md`)
+    const content = buildSourceNoteMarkdown(note, new Date().toISOString())
+    try {
+      const existing = findByNotePath(visibleEntries, fullPath)
+      if (existing) {
+        await saveNoteContent(fullPath, content, resolvedPath)
+        cacheNoteContent(fullPath, content, existing)
+        updateVaultEntry(fullPath, { modifiedAt: Math.floor(Date.now() / 1000) })
+        handleSelectNote(existing)
+      } else {
+        const entry = buildNewEntry({ path: fullPath, slug, title: note.title, type: sourceTypeLabel(note.source), status: null })
+        await persistAndOpenNote(entry, content)
+      }
+      trackEvent('source_imported', { source: note.source, assets: note.assets.length })
+      setToastMessage(`Imported ${sourceTypeLabel(note.source)}.`)
+    } catch {
+      setToastMessage('Could not import the source.')
+    }
+  }
   const dailyNotes = useDailyNotes({
     vaultPath: resolvedPath,
     entries: visibleEntries,
@@ -1620,6 +1645,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
     onFindDuplicates: () => { trackEvent('insights_opened', { tool: 'duplicates' }); setDuplicatesDialogOpen(true) },
     onFindRelated: activeTab?.entry ? () => { trackEvent('insights_opened', { tool: 'related' }); setRelatedDialogOpen(true) } : undefined,
     onSaveVaultReport: () => { void handleSaveVaultReport() },
+    onImportSource: () => setImportDialogOpen(true),
     onExtractHighlights: activeDeletedFile ? undefined : handleExtractHighlights,
     noteWidth: activeNoteWidth,
     defaultNoteWidth,
@@ -2035,6 +2061,11 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           entries={visibleEntries}
           onOpenNote={(path) => { const target = visibleEntries.find((entry) => entry.path === path); if (target) notes.handleSelectNote(target) }}
           onClose={() => setRelatedDialogOpen(false)}
+        />
+        <ImportSourceDialog
+          open={importDialogOpen}
+          onImport={(note) => { void importSource(note) }}
+          onCancel={() => setImportDialogOpen(false)}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />

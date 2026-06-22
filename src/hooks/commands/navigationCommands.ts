@@ -26,6 +26,7 @@ interface NavigationCommandsConfig {
   onFindDuplicates?: () => void
   onFindRelated?: () => void
   onSaveVaultReport?: () => void
+  onImportSource?: () => void
   onPrevDailyNote?: () => void
   onNextDailyNote?: () => void
 }
@@ -110,6 +111,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     onFindDuplicates,
     onFindRelated,
     onSaveVaultReport,
+    onImportSource,
     onPrevDailyNote,
     onNextDailyNote,
   } = config
@@ -129,6 +131,7 @@ function buildBaseCommands(config: NavigationCommandsConfig): CommandAction[] {
     { id: 'find-duplicates', label: 'Find duplicate notes', group: 'Insights', keywords: ['duplicate', 'duplicates', 'dupes', 'merge', 'same', 'title', 'cleanup'], enabled: !!onFindDuplicates, execute: () => onFindDuplicates?.() },
     { id: 'find-related', label: 'Find related notes', group: 'Insights', keywords: ['related', 'similar', 'connections', 'more like this', 'discover', 'suggest'], enabled: !!onFindRelated, execute: () => onFindRelated?.() },
     { id: 'save-vault-report', label: 'Save vault report', group: 'Insights', keywords: ['report', 'snapshot', 'export', 'stats', 'health', 'audit'], enabled: !!onSaveVaultReport, execute: () => onSaveVaultReport?.() },
+    { id: 'import-source', label: 'Import source (Reddit / Discord)', group: 'Insights', keywords: ['import', 'reddit', 'discord', 'archive', 'clip', 'capture', 'forum', 'source'], enabled: !!onImportSource, execute: () => onImportSource?.() },
     { id: 'go-all', label: 'Go to All Notes', group: 'Navigation', keywords: ['filter'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'all' }) },
     { id: 'go-archived', label: 'Go to Archived', group: 'Navigation', keywords: [], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'archived' }) },
     { id: 'go-changes', label: 'Go to Changes', group: 'Navigation', keywords: ['git', 'modified', 'pending'], enabled: true, execute: () => onSelect({ kind: 'filter', filter: 'changes' }) },
