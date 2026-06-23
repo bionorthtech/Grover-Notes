@@ -687,7 +687,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         const entry = buildNewEntry({ path: fullPath, slug, title: note.title, type: sourceTypeLabel(note.source), status: null })
         await persistAndOpenNote(entry, content)
       }
-      trackEvent('source_imported', { source: note.source, assets: note.assets.length, savedAssets: savedNames.length })
+      trackEvent('source_imported', { source: note.source, assets: note.assets.length, savedAssets: savedNames.filter(Boolean).length })
       setToastMessage(`Imported ${sourceTypeLabel(note.source)}.`)
     } catch {
       setToastMessage('Could not import the source.')

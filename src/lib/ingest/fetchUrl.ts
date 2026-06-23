@@ -26,8 +26,9 @@ function appendJson(url: string): string {
 
 /**
  * Download a note's assets into `<vault>/<destDir>` via the Rust command,
- * returning the saved filenames aligned (by index) with `urls`. Returns an
- * empty list if there are no assets or the native command is unavailable.
+ * returning the saved filenames index-aligned with `urls` (an empty string
+ * marks an asset that was skipped or failed). Returns an empty list if there
+ * are no assets or the native command is unavailable.
  */
 export async function downloadAssets(vaultPath: string, destDir: string, urls: string[]): Promise<string[]> {
   if (urls.length === 0) return []

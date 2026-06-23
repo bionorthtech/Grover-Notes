@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -80,20 +81,33 @@ pub async fn ingest_fetch(url: String, user_agent: Option<String>) -> Result<Str
     .map_err(|error| format!("Fetch task failed: {error}"))?
 }
 
-fn download_asset_to(dir: &Path, url: &str, index: usize, agent: &str) -> Result<String, String> {
+/// Ensure the chosen filename is unique within this batch so two assets that
+/// share a basename (e.g. `a.com/x/photo.jpg` and `b.com/y/photo.jpg`) don't
+/// clobber each other on disk and end up referenced as the same local file.
+/// Records the returned name in `used`.
+fn unique_asset_name(base: &str, index: usize, used: &mut HashSet<String>) -> String {
+    let name = if used.contains(base) {
+        format!("{index}-{base}")
+    } else {
+        base.to_string()
+    };
+    used.insert(name.clone());
+    name
+}
+
+fn download_asset_to(dir: &Path, url: &str, name: &str, agent: &str) -> Result<(), String> {
     let response = blocking_get(url, agent)?;
     let bytes = response
         .bytes()
         .map_err(|error| format!("Could not read asset bytes: {error}"))?;
-    let name = asset_file_name(url, index);
-    let target = dir.join(&name);
+    let target = dir.join(name);
     fs::write(&target, &bytes).map_err(|error| format!("Could not write asset: {error}"))?;
-    Ok(name)
+    Ok(())
 }
 
 /// Download a list of asset URLs into `<vault>/<dest_dir>` and return the saved
-/// filenames (in the same order). Assets that fail to download are skipped so a
-/// single broken image doesn't fail the whole import.
+/// filenames index-aligned with `urls` (an empty string marks an asset that was
+/// skipped or failed). Failing a single asset doesn't fail the whole import.
 #[tauri::command]
 pub async fn ingest_download_assets(
     vault_path: String,
@@ -106,11 +120,23 @@ pub async fn ingest_download_assets(
     tokio::task::spawn_blocking(move || {
         let dir: PathBuf = Path::new(&base).join(&dest_dir);
         fs::create_dir_all(&dir).map_err(|error| format!("Could not create asset dir: {error}"))?;
+        let mut used: HashSet<String> = HashSet::new();
+        // Index-aligned with `urls`: an empty string marks an asset that was
+        // skipped (non-http) or failed to download, so the caller's rewrite step
+        // keeps that asset's original remote URL instead of mismapping it.
         let saved = urls
             .iter()
             .enumerate()
-            .filter(|(_, url)| validate_http_url(url).is_ok())
-            .filter_map(|(index, url)| download_asset_to(&dir, url, index, &agent).ok())
+            .map(|(index, url)| {
+                if validate_http_url(url).is_err() {
+                    return String::new();
+                }
+                let name = unique_asset_name(&asset_file_name(url, index), index, &mut used);
+                match download_asset_to(&dir, url, &name, &agent) {
+                    Ok(()) => name,
+                    Err(_) => String::new(),
+                }
+            })
             .collect::<Vec<_>>();
         Ok(saved)
     })
@@ -147,6 +173,17 @@ mod tests {
         );
         assert_eq!(asset_file_name("https://example.com/", 2), "asset-2");
         assert_eq!(asset_file_name("https://example.com/../../etc", 3), "etc");
+    }
+
+    #[test]
+    fn disambiguates_colliding_asset_names() {
+        let mut used = HashSet::new();
+        assert_eq!(unique_asset_name("photo.jpg", 0, &mut used), "photo.jpg");
+        // Same basename from a different URL must not clobber the first file.
+        assert_eq!(unique_asset_name("photo.jpg", 1, &mut used), "1-photo.jpg");
+        assert_eq!(unique_asset_name("photo.jpg", 2, &mut used), "2-photo.jpg");
+        // A genuinely different name is kept as-is.
+        assert_eq!(unique_asset_name("other.png", 3, &mut used), "other.png");
     }
 
     #[test]

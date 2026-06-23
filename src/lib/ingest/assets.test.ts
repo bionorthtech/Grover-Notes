@@ -21,6 +21,17 @@ describe('rewriteAssetUrls', () => {
     expect(out).toBe('![](d/a.png) ![](https://x/b.png)')
   })
 
+  it('keeps the remote URL for an index-aligned empty (failed) entry', () => {
+    const body = '![](https://x/a.png) ![](https://x/b.png) ![](https://x/c.png)'
+    const out = rewriteAssetUrls(
+      body,
+      ['https://x/a.png', 'https://x/b.png', 'https://x/c.png'],
+      ['a.png', '', 'c.png'],
+      'd',
+    )
+    expect(out).toBe('![](d/a.png) ![](https://x/b.png) ![](d/c.png)')
+  })
+
   it('replaces every occurrence of a repeated URL', () => {
     const out = rewriteAssetUrls('https://x/a.png and https://x/a.png', ['https://x/a.png'], ['a.png'], 'd')
     expect(out).toBe('d/a.png and d/a.png')
