@@ -21,6 +21,18 @@ describe('source note model', () => {
     expect(md).toContain('- **u/bob** hi')
   })
 
+  it('quotes YAML-ambiguous bare titles so they stay strings', () => {
+    for (const title of ['No', 'Yes', 'true', 'null', '123', '1.5']) {
+      const md = buildSourceNoteMarkdown({ ...note, title }, '2026-06-16T10:00:00Z')
+      expect(md).toContain(`title: ${JSON.stringify(title)}`)
+    }
+  })
+
+  it('leaves an ordinary title unquoted', () => {
+    const md = buildSourceNoteMarkdown({ ...note, title: 'Best PKM workflow' }, '2026-06-16T10:00:00Z')
+    expect(md).toContain('title: Best PKM workflow')
+  })
+
   it('omits absent url/author', () => {
     const md = buildSourceNoteMarkdown({ ...note, url: '', author: null }, '2026-06-16T10:00:00Z')
     expect(md).not.toContain('url:')

@@ -35,8 +35,13 @@ export function sourceSlug(source: SourceKind, title: string): string {
   return `${source}-${base}`
 }
 
+// Bare scalars YAML would parse as a non-string (bool, null, or number), so a
+// title like "No" or "123" must be quoted to round-trip as a string.
+const YAML_AMBIGUOUS = /^(?:true|false|yes|no|on|off|null|~|[+-]?\d+(?:\.\d+)?)$/i
+
 function escapeYaml(value: string): string {
-  return /[:#[\]{}"'\n]/.test(value) ? JSON.stringify(value) : value
+  const needsQuote = /[:#[\]{}"'\n]/.test(value) || YAML_AMBIGUOUS.test(value.trim())
+  return needsQuote ? JSON.stringify(value) : value
 }
 
 /** Serializes a Source note to full markdown (frontmatter + body). */
