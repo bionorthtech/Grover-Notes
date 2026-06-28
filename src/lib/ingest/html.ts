@@ -42,6 +42,8 @@ function serializeElement(el: Element, ctx: Ctx): string {
   const tag = el.tagName.toLowerCase()
   if (tag in HEADINGS) return `\n${HEADINGS[tag]}${serializeChildren(el, ctx).trim()}\n`
   switch (tag) {
+    // Non-content elements: drop entirely so JS/CSS source never leaks as text.
+    case 'script': case 'style': case 'noscript': case 'template': case 'svg': case 'head': return ''
     case 'p': case 'div': case 'section': case 'article': return `\n${serializeChildren(el, ctx).trim()}\n`
     case 'br': return '\n'
     case 'hr': return '\n---\n'

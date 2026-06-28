@@ -30,4 +30,13 @@ describe('htmlToMarkdown', () => {
     expect(markdown).toContain('1. first')
     expect(markdown).toContain('2. second')
   })
+
+  it('drops script and style content instead of leaking source as text', () => {
+    const { markdown } = htmlToMarkdown(
+      '<p>Real text</p><script>var leak = 1;</script><style>.x{color:red}</style>',
+    )
+    expect(markdown).toContain('Real text')
+    expect(markdown).not.toContain('leak')
+    expect(markdown).not.toContain('color:red')
+  })
 })
