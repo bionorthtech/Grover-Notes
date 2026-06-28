@@ -53,4 +53,45 @@ describe('redditThreadToSourceNote', () => {
     expect(redditThreadToSourceNote(null).title).toBe('Reddit thread')
     expect(redditThreadToSourceNote([]).body).toContain('## Comments')
   })
+
+  function imagePost(data: Record<string, unknown>) {
+    return [{ data: { children: [{ kind: 't3', data: { title: 'Pic', ...data } }] } }, { data: { children: [] } }]
+  }
+
+  it('embeds a direct image post and records it as an asset', () => {
+    const note = redditThreadToSourceNote(imagePost({ url: 'https://i.redd.it/x.jpg' }))
+    expect(note.body).toContain('![](https://i.redd.it/x.jpg)')
+    expect(note.assets).toEqual(['https://i.redd.it/x.jpg'])
+  })
+
+  it('embeds every image in a gallery via media_metadata, unescaping &amp;', () => {
+    const note = redditThreadToSourceNote(imagePost({
+      is_gallery: true,
+      gallery_data: { items: [{ media_id: 'a1' }, { media_id: 'b2' }] },
+      media_metadata: {
+        a1: { s: { u: 'https://preview.redd.it/a1.jpg?width=1&amp;s=z' } },
+        b2: { s: { u: 'https://preview.redd.it/b2.png' } },
+      },
+    }))
+    expect(note.body).toContain('![](https://preview.redd.it/a1.jpg?width=1&s=z)')
+    expect(note.body).toContain('![](https://preview.redd.it/b2.png)')
+    expect(note.assets).toEqual([
+      'https://preview.redd.it/a1.jpg?width=1&s=z',
+      'https://preview.redd.it/b2.png',
+    ])
+  })
+
+  it('falls back to the preview image when there is no direct or gallery image', () => {
+    const note = redditThreadToSourceNote(imagePost({
+      url: 'https://www.reddit.com/r/x/comments/y/pic/',
+      preview: { images: [{ source: { url: 'https://preview.redd.it/p.jpg?s=a&amp;b=c' } }] },
+    }))
+    expect(note.assets).toEqual(['https://preview.redd.it/p.jpg?s=a&b=c'])
+  })
+
+  it('does not embed a non-image post url', () => {
+    const note = redditThreadToSourceNote(imagePost({ url: 'https://example.com/article' }))
+    expect(note.assets).toEqual([])
+    expect(note.body).not.toContain('![](')
+  })
 })

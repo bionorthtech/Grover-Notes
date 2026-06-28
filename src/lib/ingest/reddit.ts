@@ -24,10 +24,55 @@ function num(value: unknown): number {
   return typeof value === 'number' ? value : 0
 }
 
+function obj(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
+}
+
 const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp)(\?|$)/i
 
-function collectAsset(url: string, assets: string[]): void {
-  if (url && IMAGE_RE.test(url) && !assets.includes(url)) assets.push(url)
+// Reddit HTML-escapes ampersands in media URLs (&amp;), which breaks the link.
+function unescapeUrl(url: string): string {
+  return url.replace(/&amp;/g, '&')
+}
+
+/** Embed an image in the body and record it as a downloadable asset, once. */
+function embedImage(url: string, lines: string[], assets: string[]): void {
+  const clean = unescapeUrl(url)
+  if (!clean || assets.includes(clean)) return
+  assets.push(clean)
+  lines.push(`![](${clean})`, '')
+}
+
+/** URL of a single gallery/preview media entry (still image or animation). */
+function mediaUrl(meta: Record<string, unknown>): string {
+  const source = obj(meta.s)
+  return str(source.u) || str(source.gif) || str(source.mp4)
+}
+
+/** Gallery posts hold image ids in `gallery_data`, resolved via `media_metadata`. */
+function collectGallery(post: Record<string, unknown>, lines: string[], assets: string[]): void {
+  const items = obj(post.gallery_data).items
+  const metadata = obj(post.media_metadata)
+  if (!Array.isArray(items)) return
+  for (const item of items) {
+    const url = mediaUrl(obj(metadata[str(obj(item).media_id)]))
+    if (url) embedImage(url, lines, assets)
+  }
+}
+
+/** First preview image URL, if the post carries a `preview.images[]` block. */
+function previewUrl(post: Record<string, unknown>): string {
+  const images = obj(post.preview).images
+  const first = Array.isArray(images) ? obj(images[0]) : {}
+  return str(obj(first.source).url)
+}
+
+/** Embed the post's images: a direct image link, a gallery, or the preview. */
+function collectPostMedia(post: Record<string, unknown>, lines: string[], assets: string[]): void {
+  const direct = str(post.url)
+  if (IMAGE_RE.test(direct)) embedImage(direct, lines, assets)
+  collectGallery(post, lines, assets)
+  if (assets.length === 0) embedImage(previewUrl(post), lines, assets)
 }
 
 function renderComment(thing: RedditThing, depth: number, lines: string[], assets: string[]): void {
@@ -59,12 +104,11 @@ export function redditThreadToSourceNote(payload: unknown): SourceNote {
   const selftext = str(post.selftext).trim()
 
   const assets: string[] = []
-  collectAsset(str(post.url), assets)
-
   const body: string[] = []
   const meta = [subreddit, author ? `by u/${author}` : '', `${num(post.score)} points`].filter(Boolean)
   if (meta.length) body.push(`*${meta.join(' · ')}*`, '')
   if (selftext) body.push(selftext, '')
+  collectPostMedia(post, body, assets)
   body.push('## Comments', '')
 
   for (const child of listings[1]?.data?.children ?? []) {
