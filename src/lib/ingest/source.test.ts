@@ -44,6 +44,13 @@ describe('source note model', () => {
     expect(sourceSlug('discord', '   ')).toBe('discord-untitled')
   })
 
+  it('does not leave a trailing dash when a long title is cut mid-word', () => {
+    // 'a ' repeated makes the 60th char a separator; the slug must not end in '-'.
+    const slug = sourceSlug('reddit', 'a '.repeat(40))
+    expect(slug.endsWith('-')).toBe(false)
+    expect(slug.length).toBeLessThanOrEqual('reddit-'.length + 60)
+  })
+
   it('labels source kinds', () => {
     expect(sourceTypeLabel('discord')).toBe('Discord Channel')
   })

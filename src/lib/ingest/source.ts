@@ -30,8 +30,8 @@ export interface SourceNote {
 export function sourceSlug(source: SourceKind, title: string): string {
   const base = title.trim().toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'untitled'
+    .slice(0, 60)
+    .replace(/^-+|-+$/g, '') || 'untitled'
   return `${source}-${base}`
 }
 
