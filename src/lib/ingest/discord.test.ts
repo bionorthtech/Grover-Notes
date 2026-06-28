@@ -21,10 +21,19 @@ describe('discordExportToSourceNote', () => {
     expect(note.body).toContain('> world')
   })
 
-  it('collects attachments as assets and links them', () => {
+  it('collects image attachments as assets and embeds them inline', () => {
     const note = discordExportToSourceNote(payload)
     expect(note.assets).toEqual(['https://cdn/x.png'])
-    expect(note.body).toContain('[x.png](https://cdn/x.png)')
+    expect(note.body).toContain('> ![x.png](https://cdn/x.png)')
+  })
+
+  it('renders non-image attachments as links, not inline images', () => {
+    const note = discordExportToSourceNote({
+      channel: { name: 'g' },
+      messages: [{ author: { name: 'a' }, attachments: [{ url: 'https://cdn/doc.pdf', fileName: 'doc.pdf' }] }],
+    })
+    expect(note.body).toContain('> [doc.pdf](https://cdn/doc.pdf)')
+    expect(note.body).not.toContain('![doc.pdf]')
   })
 
   it('handles an empty payload', () => {

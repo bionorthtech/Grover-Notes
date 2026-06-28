@@ -31,6 +31,13 @@ function formatTime(timestamp: string | undefined): string {
   return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 16).replace('T', ' ')
 }
 
+const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp)(\?|$)/i
+
+/** Render an image attachment inline (so it shows offline) and others as links. */
+function renderAttachment(name: string, url: string): string {
+  return IMAGE_RE.test(name) || IMAGE_RE.test(url) ? `> ![${name}](${url})` : `> [${name}](${url})`
+}
+
 /** Transforms a DiscordChatExporter JSON payload into a Source note. */
 export function discordExportToSourceNote(payload: unknown): SourceNote {
   const data = (payload ?? {}) as DiscordExport
@@ -48,7 +55,7 @@ export function discordExportToSourceNote(payload: unknown): SourceNote {
     for (const attachment of message.attachments ?? []) {
       const url = attachment.url ?? ''
       if (url) {
-        body.push(`> [${attachment.fileName || 'attachment'}](${url})`)
+        body.push(renderAttachment(attachment.fileName || 'attachment', url))
         if (!assets.includes(url)) assets.push(url)
       }
     }
