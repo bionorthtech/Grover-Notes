@@ -192,4 +192,101 @@ mod tests {
         assert_eq!(name, "asset-5");
         assert!(!name.contains('/'));
     }
+
+    // ── Integration tests against a tiny in-process HTTP server ──────────────
+    // Exercises the real reqwest fetch/download/write paths without external
+    // network so the command code is covered.
+
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+
+    /// Serve canned responses on an ephemeral port and return its base URL.
+    /// Routes: `/missing` → 404; any path ending `.png`/`.jpg` → 4 bytes of the
+    /// last path segment's first char; everything else → a text body.
+    fn start_test_server() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let base = format!("http://{}", listener.local_addr().unwrap());
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let mut stream = match stream {
+                    Ok(stream) => stream,
+                    Err(_) => continue,
+                };
+                let mut buf = [0u8; 1024];
+                let read = stream.read(&mut buf).unwrap_or(0);
+                let request = String::from_utf8_lossy(&buf[..read]);
+                let path = request.split_whitespace().nth(1).unwrap_or("/").to_string();
+                let (status, body) = route(&path);
+                let response = format!(
+                    "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                    body.len()
+                );
+                let _ = stream.write_all(response.as_bytes());
+                let _ = stream.write_all(&body);
+            }
+        });
+        base
+    }
+
+    fn route(path: &str) -> (&'static str, Vec<u8>) {
+        if path.contains("missing") {
+            ("404 Not Found", b"nope".to_vec())
+        } else if path.ends_with(".png") || path.ends_with(".jpg") {
+            ("200 OK", b"DATA".to_vec())
+        } else {
+            ("200 OK", b"hello body".to_vec())
+        }
+    }
+
+    fn run<F: std::future::Future>(future: F) -> F::Output {
+        tokio::runtime::Runtime::new().unwrap().block_on(future)
+    }
+
+    #[test]
+    fn ingest_fetch_returns_body_text() {
+        let base = start_test_server();
+        let body = run(ingest_fetch(format!("{base}/thread.json"), None)).unwrap();
+        assert_eq!(body, "hello body");
+    }
+
+    #[test]
+    fn ingest_fetch_rejects_non_http_scheme() {
+        let error = run(ingest_fetch("file:///etc/passwd".into(), None)).unwrap_err();
+        assert!(error.contains("http"));
+    }
+
+    #[test]
+    fn ingest_fetch_errors_on_http_failure_status() {
+        let base = start_test_server();
+        let error = run(ingest_fetch(format!("{base}/missing"), None)).unwrap_err();
+        assert!(error.contains("404"));
+    }
+
+    #[test]
+    fn download_assets_writes_files_and_aligns_results() {
+        let base = start_test_server();
+        let dir = tempfile::tempdir().unwrap();
+        let vault = dir.path().to_string_lossy().into_owned();
+        let urls = vec![
+            format!("{base}/x/photo.jpg"), // ok → photo.jpg
+            "ftp://example.com/skip.png".to_string(), // invalid scheme → ""
+            format!("{base}/y/photo.jpg"), // same basename → 2-photo.jpg
+            format!("{base}/missing.png"), // 404 → ""
+        ];
+        let saved = run(ingest_download_assets(vault, "assets".into(), urls, None)).unwrap();
+
+        assert_eq!(saved, vec!["photo.jpg", "", "2-photo.jpg", ""]);
+        let asset_dir = dir.path().join("assets");
+        assert_eq!(fs::read(asset_dir.join("photo.jpg")).unwrap(), b"DATA");
+        assert_eq!(fs::read(asset_dir.join("2-photo.jpg")).unwrap(), b"DATA");
+        assert!(!asset_dir.join("missing.png").exists());
+    }
+
+    #[test]
+    fn download_assets_returns_empty_for_no_urls() {
+        let dir = tempfile::tempdir().unwrap();
+        let vault = dir.path().to_string_lossy().into_owned();
+        let saved = run(ingest_download_assets(vault, "assets".into(), vec![], None)).unwrap();
+        assert!(saved.is_empty());
+    }
 }
