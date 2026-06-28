@@ -80,6 +80,13 @@ pnpm playwright:smoke       # Curated Playwright core smoke lane (~5 min)
 pnpm playwright:regression  # Full Playwright regression suite
 ```
 
+> **Headless/CI note for the Rust suite.** Some `vault` tests resolve a default
+> vault location via `dirs::document_dir()`. On a bare headless container with no
+> `~/Documents` and no XDG user-dirs, those tests (and a few `vault::cache`
+> tests that share on-disk state) fail for environmental reasons, not code
+> defects — they pass on a normal desktop, or once a Documents directory is
+> resolvable (e.g. `~/.config/user-dirs.dirs` with `XDG_DOCUMENTS_DIR`).
+
 ## Starter Vaults And Remotes
 
 `create_getting_started_vault` clones the public starter repo and then removes every git remote from the new local copy. That means Getting Started vaults open local-only by default. Users connect a compatible remote later through the bottom-bar `No remote` chip or the command palette, both of which feed the same `AddRemoteModal` and `git_add_remote` backend flow.
