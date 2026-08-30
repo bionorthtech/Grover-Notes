@@ -119,7 +119,7 @@ flowchart TD
         IDA[ingest_download_assets]
     end
     D -->|URL| F --> N --> IF
-    F --> DT --> R & DC & DQ & W
+    F --> DT --> R & DQ & W
     D -->|import| SRC
     D --> DL --> IDA
     IF -.live URL.-> DT
