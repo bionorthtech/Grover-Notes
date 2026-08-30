@@ -87,8 +87,15 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 
 ## Outstanding rebrand follow-ups (not features)
 
-- **App/brand icon art:** the binary icons under `src-tauri/icons/` and `src/assets/`
-  still contain Tolaria's original artwork. Per Tolaria's trademark policy these must be
-  replaced with original Grover artwork before any public release.
+- ~~**App/brand icon art:**~~ **Done.** All icons are now original Grover artwork (a
+  cream sprout on a forest-green squircle) generated from
+  `src-tauri/icons/grover-icon-source.svg`; the favicon and in-app/site logos use the
+  same mark. No Tolaria artwork remains, satisfying the trademark requirement.
+- **Legacy `tolaria` identifiers are intentional.** `LEGACY_APP_STORAGE_KEYS`
+  (`src/constants/appStorage.ts`) and `LEGACY_MCP_SERVER_NAME` (`src-tauri/src/mcp.rs`)
+  deliberately retain the old name so users upgrading from Tolaria keep their settings
+  and get their stale MCP entry migrated. Do not "clean these up" in a rename pass —
+  a blanket rename previously collapsed the MCP pair into one value and silently
+  disabled that migration.
 - **Updater endpoint** currently points at `bionorthtech.github.io/grover-notes`, which
   does not host releases yet; wire up or disable before shipping auto-update.
