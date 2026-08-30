@@ -858,7 +858,11 @@ Saved filters live in `views/` as `.view.json` files:
         assert!(AGENTS_MD.contains("actual frontmatter keys used in this vault such as `related_to`, `belongs_to`, or `url`."));
         assert!(AGENTS_MD.contains("Belongs to:"));
         assert!(AGENTS_MD.contains("Do not create JSON view files or `.view.json` filenames."));
-        assert!(!AGENTS_MD.contains("Grover"));
+        // Guards against the superseded brand leaking back into the managed
+        // template. The blanket Tolaria->Grover rebrand rewrote this to
+        // `!contains("Grover")`, which contradicted the assertions above that
+        // require the "# AGENTS.md — Grover Vault" heading.
+        assert!(!AGENTS_MD.contains("Tolaria"));
         assert!(!AGENTS_MD.contains("Is A"));
         assert!(!AGENTS_MD.contains("is_a"));
         assert!(!AGENTS_MD.contains("type definitions currently live"));

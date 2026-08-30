@@ -12,7 +12,11 @@ mod subprocess;
 pub(crate) use extraction::extract_mcp_server_to_stable_dir;
 
 const MCP_SERVER_NAME: &str = "grover";
-const LEGACY_MCP_SERVER_NAME: &str = "grover";
+/// Pre-rebrand server name. Vaults set up before the Tolaria->Grover rename
+/// still carry this entry in agent MCP configs; `upsert_mcp_config` migrates it
+/// to `MCP_SERVER_NAME` so users aren't left with a stale, broken server.
+/// Must differ from `MCP_SERVER_NAME` or the migration silently no-ops.
+const LEGACY_MCP_SERVER_NAME: &str = "tolaria";
 
 /// Status of the MCP server installation.
 #[derive(Debug, Serialize, Clone, PartialEq)]
@@ -1110,7 +1114,7 @@ mod tests {
 
         let existing = serde_json::json!({
             "mcpServers": {
-                "grover": {
+                LEGACY_MCP_SERVER_NAME: {
                     "command": "node",
                     "args": ["/old/index.js"],
                     "env": { "VAULT_PATH": "/old" }

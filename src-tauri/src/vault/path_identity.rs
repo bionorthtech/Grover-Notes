@@ -40,6 +40,18 @@ pub(crate) fn has_hidden_segment(path: &RelativePathText) -> bool {
         .any(|segment| segment.starts_with('.'))
 }
 
+/// Append a git-reported relative path, normalizing separators and skipping
+/// hidden/empty paths. Deduplicates on the *exact* normalized path.
+///
+/// Deliberately case-sensitive: on a case-sensitive filesystem `Note.md` and
+/// `note.md` are two different files, and a case-only rename makes git report
+/// both (one deleted, one added). Collapsing them here kept only whichever git
+/// listed first — often the deleted spelling — so the surviving file was never
+/// re-parsed and vanished from the vault until a full rescan.
+///
+/// Case collisions are instead resolved by `prune_stale_entries`, which drops
+/// entries whose file no longer exists *before* case-folding, so on a
+/// case-insensitive filesystem the duplicate still collapses to one entry.
 pub(crate) fn push_unique_relative_path(
     paths: &mut Vec<String>,
     path: impl AsRef<RelativePathText>,
@@ -48,11 +60,7 @@ pub(crate) fn push_unique_relative_path(
     if normalized.is_empty() || has_hidden_segment(&normalized) {
         return;
     }
-    let key = relative_path_key(&normalized);
-    if !paths
-        .iter()
-        .any(|existing| relative_path_key(existing) == key)
-    {
+    if !paths.contains(&normalized) {
         paths.push(normalized);
     }
 }
@@ -104,14 +112,29 @@ mod tests {
 
     #[test]
     fn test_relative_path_key_is_case_insensitive_without_changing_output_path() {
-        let mut paths = vec![];
-        push_unique_relative_path(&mut paths, "Projects\\Active.md");
-        push_unique_relative_path(&mut paths, "projects/active.md");
-
-        assert_eq!(paths, vec!["Projects/Active.md"]);
         assert_eq!(
             relative_path_key("Projects\\Active.md"),
             "projects/active.md"
         );
+    }
+
+    #[test]
+    fn test_push_unique_dedupes_only_identical_normalized_paths() {
+        let mut paths = vec![];
+        // Same path, different separators → one entry, original spelling kept.
+        push_unique_relative_path(&mut paths, "Projects\\Active.md");
+        push_unique_relative_path(&mut paths, "Projects/Active.md");
+        assert_eq!(paths, vec!["Projects/Active.md"]);
+    }
+
+    #[test]
+    fn test_push_unique_keeps_case_variants_as_distinct_files() {
+        // A case-only rename makes git report both spellings. On a
+        // case-sensitive filesystem these are different files, so both must
+        // survive or the renamed note disappears until a full rescan.
+        let mut paths = vec![];
+        push_unique_relative_path(&mut paths, "Note.md");
+        push_unique_relative_path(&mut paths, "note.md");
+        assert_eq!(paths, vec!["Note.md", "note.md"]);
     }
 }

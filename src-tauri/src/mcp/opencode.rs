@@ -191,7 +191,7 @@ mod tests {
             &config_path,
             serde_json::json!({
                 "mcp": {
-                    "grover": { "type": "local", "command": ["node", "/old.js"] }
+                    LEGACY_MCP_SERVER_NAME: { "type": "local", "command": ["node", "/old.js"] }
                 }
             }),
         );

@@ -710,6 +710,16 @@ mod tests {
     /// `std::env::set_var` is process-global, so parallel tests would race.
     static ENV_LOCK: Mutex<()> = Mutex::new(());
 
+    /// Acquire `ENV_LOCK`, ignoring poisoning.
+    ///
+    /// The mutex guards no data — it only serializes access to a process-global
+    /// env var — so a panic in one test leaves no broken invariant behind. Using
+    /// `.unwrap()` here would turn a single failing test into a cascade of
+    /// spurious "poisoned lock" failures across every other test in this module.
+    fn env_lock() -> std::sync::MutexGuard<'static, ()> {
+        ENV_LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     /// Set up a temporary cache directory for test isolation.
     /// Caller MUST hold `ENV_LOCK` for the duration of the test.
     fn set_test_cache_dir(dir: &Path) {
@@ -746,7 +756,7 @@ mod tests {
     /// Common setup: acquire env lock, create temp cache dir + git-initialised vault.
     /// Returns (lock_guard, cache_tmpdir, vault_tmpdir) — keep all alive for the test.
     fn setup_git_vault() -> (std::sync::MutexGuard<'static, ()>, TempDir, TempDir) {
-        let lock = ENV_LOCK.lock().unwrap();
+        let lock = env_lock();
         let cache_tmp = TempDir::new().unwrap();
         set_test_cache_dir(cache_tmp.path());
         let vault_tmp = TempDir::new().unwrap();
@@ -777,7 +787,7 @@ mod tests {
 
     #[test]
     fn test_cache_path_is_outside_vault() {
-        let _lock = ENV_LOCK.lock().unwrap();
+        let _lock = env_lock();
         let cache_dir = TempDir::new().unwrap();
         set_test_cache_dir(cache_dir.path());
 
@@ -827,7 +837,7 @@ mod tests {
 
     #[test]
     fn test_cache_write_no_tmp_file_left() {
-        let _lock = ENV_LOCK.lock().unwrap();
+        let _lock = env_lock();
         let cache_dir = TempDir::new().unwrap();
         set_test_cache_dir(cache_dir.path());
 
@@ -892,7 +902,7 @@ mod tests {
 
     #[test]
     fn test_scan_vault_cached_no_git() {
-        let _lock = ENV_LOCK.lock().unwrap();
+        let _lock = env_lock();
         let cache_dir = TempDir::new().unwrap();
         set_test_cache_dir(cache_dir.path());
 
