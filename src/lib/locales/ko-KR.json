@@ -16,6 +16,7 @@
   "command.contribute": "기여하기",
   "command.checkUpdates": "업데이트 확인",
   "command.group.navigation": "탐색",
+  "command.group.insights": "인사이트",
   "command.group.note": "노트",
   "command.group.git": "Git",
   "command.group.view": "보기",

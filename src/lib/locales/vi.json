@@ -16,6 +16,7 @@
   "command.contribute": "Đóng góp",
   "command.checkUpdates": "Kiểm tra cập nhật",
   "command.group.navigation": "Điều hướng",
+  "command.group.insights": "Thông tin chi tiết",
   "command.group.note": "Ghi chú",
   "command.group.git": "Git",
   "command.group.view": "Giao diện",

@@ -16,6 +16,7 @@
   "command.contribute": "Berkontribusi",
   "command.checkUpdates": "Periksa Pembaruan",
   "command.group.navigation": "Navigasi",
+  "command.group.insights": "Wawasan",
   "command.group.note": "Catatan",
   "command.group.git": "Git",
   "command.group.view": "Tampilan",

@@ -16,6 +16,7 @@
   "command.contribute": "参与贡献",
   "command.checkUpdates": "检查更新",
   "command.group.navigation": "导航",
+  "command.group.insights": "洞察",
   "command.group.note": "笔记",
   "command.group.git": "Git",
   "command.group.view": "视图",

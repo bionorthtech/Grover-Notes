@@ -16,6 +16,7 @@
   "command.contribute": "投稿する",
   "command.checkUpdates": "更新の確認",
   "command.group.navigation": "ナビゲーション",
+  "command.group.insights": "インサイト",
   "command.group.note": "メモ",
   "command.group.git": "Git",
   "command.group.view": "表示",

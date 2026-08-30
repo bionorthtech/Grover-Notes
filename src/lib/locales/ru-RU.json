@@ -16,6 +16,7 @@
   "command.contribute": "Внести свой вклад",
   "command.checkUpdates": "Проверить наличие обновлений",
   "command.group.navigation": "Навигация",
+  "command.group.insights": "Аналитика",
   "command.group.note": "Примечание",
   "command.group.git": "Git",
   "command.group.view": "Просмотр",

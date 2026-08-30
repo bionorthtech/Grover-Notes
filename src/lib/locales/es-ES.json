@@ -16,6 +16,7 @@
   "command.contribute": "Contribuir",
   "command.checkUpdates": "Buscar actualizaciones",
   "command.group.navigation": "Navegación",
+  "command.group.insights": "Análisis",
   "command.group.note": "Nota",
   "command.group.git": "Git",
   "command.group.view": "Ver",
