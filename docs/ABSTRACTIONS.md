@@ -451,6 +451,26 @@ The local MCP WebSocket bridge follows the same active-vault boundary. `useVault
 6. Replaces the cache with a temp-file write + rename only if a short-lived writer lock and cache fingerprint check show another scan has not already refreshed it
 7. On first run, migrates any legacy `.grover-cache.json` from inside the vault
 
+**Path identity and case.** Two helpers in `vault::path_identity` split
+responsibility deliberately, and the split matters:
+
+- `relative_path_key` case-folds a path. It is the *matching* key — used to
+  decide which cached entries a changed path invalidates, and to collapse
+  duplicates that a case-insensitive filesystem (macOS APFS, Windows) can
+  produce for a single file.
+- `push_unique_relative_path` collects git-reported changed paths and dedupes on
+  the **exact** normalized path, not the folded key. Git reports a case-only
+  rename as two paths (old deleted, new added); folding them together kept only
+  whichever git listed first — often the deleted spelling — so the surviving
+  file was never re-parsed and the note disappeared from the vault until a full
+  rescan on case-sensitive filesystems.
+
+Case collisions are therefore resolved by `prune_stale_entries`, which drops
+entries whose file no longer exists **before** case-folding. That ordering is
+load-bearing: it keeps the entry that actually exists on disk, so
+case-sensitive and case-insensitive filesystems both end up with one correct
+entry.
+
 ### Frontmatter Manipulation (Rust)
 
 `frontmatter/ops.rs:update_frontmatter_content()` performs line-by-line YAML editing:

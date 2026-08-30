@@ -80,12 +80,18 @@ pnpm playwright:smoke       # Curated Playwright core smoke lane (~5 min)
 pnpm playwright:regression  # Full Playwright regression suite
 ```
 
-> **Headless/CI note for the Rust suite.** Some `vault` tests resolve a default
-> vault location via `dirs::document_dir()`. On a bare headless container with no
-> `~/Documents` and no XDG user-dirs, those tests (and a few `vault::cache`
-> tests that share on-disk state) fail for environmental reasons, not code
-> defects — they pass on a normal desktop, or once a Documents directory is
-> resolvable (e.g. `~/.config/user-dirs.dirs` with `XDG_DOCUMENTS_DIR`).
+> **Headless/CI note for the Rust suite.** A couple of `vault` tests resolve a
+> default vault location via `dirs::document_dir()`. On a bare headless
+> container with no `~/Documents` and no XDG user-dirs that lookup returns
+> `None` and those tests fail for environmental reasons, not code defects. They
+> pass on a normal desktop, or once a Documents directory is resolvable:
+>
+> ```bash
+> mkdir -p ~/Documents ~/.config
+> printf 'XDG_DOCUMENTS_DIR="$HOME/Documents"\n' > ~/.config/user-dirs.dirs
+> ```
+>
+> With that in place the full suite is green (`cargo test --lib`).
 
 ## Starter Vaults And Remotes
 
