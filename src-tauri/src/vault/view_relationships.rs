@@ -193,28 +193,72 @@ mod tests {
     #[test]
     fn contains_matches_ignoring_brackets_alias_and_case() {
         let value = scalar("some note");
-        assert!(evaluate_relationship_op(&FilterOp::Contains, &rels(&["[[Some Note]]"]), &value));
-        assert!(evaluate_relationship_op(&FilterOp::Contains, &rels(&["[[Some Note|Alias]]"]), &value));
-        assert!(!evaluate_relationship_op(&FilterOp::Contains, &rels(&["[[Other]]"]), &value));
+        assert!(evaluate_relationship_op(
+            &FilterOp::Contains,
+            &rels(&["[[Some Note]]"]),
+            &value
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::Contains,
+            &rels(&["[[Some Note|Alias]]"]),
+            &value
+        ));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::Contains,
+            &rels(&["[[Other]]"]),
+            &value
+        ));
         // A missing filter value can never be contained.
-        assert!(!evaluate_relationship_op(&FilterOp::Contains, &rels(&["[[Some Note]]"]), &None));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::Contains,
+            &rels(&["[[Some Note]]"]),
+            &None
+        ));
     }
 
     #[test]
     fn not_contains_is_the_inverse_and_defaults_true_without_a_value() {
         let value = scalar("Some Note");
-        assert!(!evaluate_relationship_op(&FilterOp::NotContains, &rels(&["[[Some Note]]"]), &value));
-        assert!(evaluate_relationship_op(&FilterOp::NotContains, &rels(&["[[Other]]"]), &value));
-        assert!(evaluate_relationship_op(&FilterOp::NotContains, &rels(&["[[Some Note]]"]), &None));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::NotContains,
+            &rels(&["[[Some Note]]"]),
+            &value
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::NotContains,
+            &rels(&["[[Other]]"]),
+            &value
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::NotContains,
+            &rels(&["[[Some Note]]"]),
+            &None
+        ));
     }
 
     #[test]
     fn any_of_and_none_of_match_across_a_list() {
         let targets = list(&["Alpha", "Beta"]);
-        assert!(evaluate_relationship_op(&FilterOp::AnyOf, &rels(&["[[Beta]]"]), &targets));
-        assert!(!evaluate_relationship_op(&FilterOp::AnyOf, &rels(&["[[Gamma]]"]), &targets));
-        assert!(!evaluate_relationship_op(&FilterOp::NoneOf, &rels(&["[[Beta]]"]), &targets));
-        assert!(evaluate_relationship_op(&FilterOp::NoneOf, &rels(&["[[Gamma]]"]), &targets));
+        assert!(evaluate_relationship_op(
+            &FilterOp::AnyOf,
+            &rels(&["[[Beta]]"]),
+            &targets
+        ));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::AnyOf,
+            &rels(&["[[Gamma]]"]),
+            &targets
+        ));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::NoneOf,
+            &rels(&["[[Beta]]"]),
+            &targets
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::NoneOf,
+            &rels(&["[[Gamma]]"]),
+            &targets
+        ));
         // No relationships at all matches nothing, so NoneOf holds.
         assert!(evaluate_relationship_op(&FilterOp::NoneOf, &[], &targets));
     }
@@ -222,34 +266,74 @@ mod tests {
     #[test]
     fn emptiness_ops_ignore_the_filter_value() {
         assert!(evaluate_relationship_op(&FilterOp::IsEmpty, &[], &None));
-        assert!(!evaluate_relationship_op(&FilterOp::IsEmpty, &rels(&["[[A]]"]), &None));
-        assert!(evaluate_relationship_op(&FilterOp::IsNotEmpty, &rels(&["[[A]]"]), &None));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::IsEmpty,
+            &rels(&["[[A]]"]),
+            &None
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::IsNotEmpty,
+            &rels(&["[[A]]"]),
+            &None
+        ));
         assert!(!evaluate_relationship_op(&FilterOp::IsNotEmpty, &[], &None));
     }
 
     #[test]
     fn equals_requires_exactly_one_matching_relationship() {
         let value = scalar("Alpha");
-        assert!(evaluate_relationship_op(&FilterOp::Equals, &rels(&["[[Alpha]]"]), &value));
+        assert!(evaluate_relationship_op(
+            &FilterOp::Equals,
+            &rels(&["[[Alpha]]"]),
+            &value
+        ));
         // Two relationships is not "equals", even when one matches.
-        assert!(!evaluate_relationship_op(&FilterOp::Equals, &rels(&["[[Alpha]]", "[[Beta]]"]), &value));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::Equals,
+            &rels(&["[[Alpha]]", "[[Beta]]"]),
+            &value
+        ));
         // Equals with no filter value means "has no relationships".
         assert!(evaluate_relationship_op(&FilterOp::Equals, &[], &None));
-        assert!(!evaluate_relationship_op(&FilterOp::Equals, &rels(&["[[Alpha]]"]), &None));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::Equals,
+            &rels(&["[[Alpha]]"]),
+            &None
+        ));
     }
 
     #[test]
     fn not_equals_inverts_equals() {
         let value = scalar("Alpha");
-        assert!(!evaluate_relationship_op(&FilterOp::NotEquals, &rels(&["[[Alpha]]"]), &value));
-        assert!(evaluate_relationship_op(&FilterOp::NotEquals, &rels(&["[[Alpha]]", "[[Beta]]"]), &value));
-        assert!(evaluate_relationship_op(&FilterOp::NotEquals, &rels(&["[[Alpha]]"]), &None));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::NotEquals,
+            &rels(&["[[Alpha]]"]),
+            &value
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::NotEquals,
+            &rels(&["[[Alpha]]", "[[Beta]]"]),
+            &value
+        ));
+        assert!(evaluate_relationship_op(
+            &FilterOp::NotEquals,
+            &rels(&["[[Alpha]]"]),
+            &None
+        ));
         assert!(!evaluate_relationship_op(&FilterOp::NotEquals, &[], &None));
     }
 
     #[test]
     fn unsupported_ops_never_match() {
-        assert!(!evaluate_relationship_op(&FilterOp::Before, &rels(&["[[A]]"]), &scalar("A")));
-        assert!(!evaluate_relationship_op(&FilterOp::After, &rels(&["[[A]]"]), &scalar("A")));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::Before,
+            &rels(&["[[A]]"]),
+            &scalar("A")
+        ));
+        assert!(!evaluate_relationship_op(
+            &FilterOp::After,
+            &rels(&["[[A]]"]),
+            &scalar("A")
+        ));
     }
 }

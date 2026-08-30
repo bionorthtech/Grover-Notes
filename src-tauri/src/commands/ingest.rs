@@ -6,7 +6,11 @@ use std::time::Duration;
 /// Descriptive User-Agent. Reddit and several forums reject the default reqwest
 /// agent (and browser fetches hit CORS), so live fetching happens here in Rust
 /// with a stable, identifiable agent string.
-const DEFAULT_USER_AGENT: &str = concat!("GroverNotes/", env!("CARGO_PKG_VERSION"), " (archival ingest)");
+const DEFAULT_USER_AGENT: &str = concat!(
+    "GroverNotes/",
+    env!("CARGO_PKG_VERSION"),
+    " (archival ingest)"
+);
 
 /// Reject anything that isn't an http(s) URL before we hand it to reqwest, so a
 /// `file://` or other scheme can't be coerced into reading local resources.
@@ -166,7 +170,10 @@ mod tests {
 
     #[test]
     fn derives_safe_asset_file_names() {
-        assert_eq!(asset_file_name("https://i.redd.it/abc123.png", 0), "abc123.png");
+        assert_eq!(
+            asset_file_name("https://i.redd.it/abc123.png", 0),
+            "abc123.png"
+        );
         assert_eq!(
             asset_file_name("https://cdn.example.com/path/photo.jpg?width=800", 1),
             "photo.jpg"
@@ -268,10 +275,10 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let vault = dir.path().to_string_lossy().into_owned();
         let urls = vec![
-            format!("{base}/x/photo.jpg"), // ok → photo.jpg
+            format!("{base}/x/photo.jpg"),            // ok → photo.jpg
             "ftp://example.com/skip.png".to_string(), // invalid scheme → ""
-            format!("{base}/y/photo.jpg"), // same basename → 2-photo.jpg
-            format!("{base}/missing.png"), // 404 → ""
+            format!("{base}/y/photo.jpg"),            // same basename → 2-photo.jpg
+            format!("{base}/missing.png"),            // 404 → ""
         ];
         let saved = run(ingest_download_assets(vault, "assets".into(), urls, None)).unwrap();
 

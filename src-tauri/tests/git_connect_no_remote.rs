@@ -2,8 +2,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use tempfile::TempDir;
 use grover_lib::git::{git_add_remote, git_commit, git_remote_status};
+use tempfile::TempDir;
 
 fn run_git(path: &Path, args: &[&str]) {
     let output = Command::new("git")

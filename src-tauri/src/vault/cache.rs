@@ -717,7 +717,9 @@ mod tests {
     /// `.unwrap()` here would turn a single failing test into a cascade of
     /// spurious "poisoned lock" failures across every other test in this module.
     fn env_lock() -> std::sync::MutexGuard<'static, ()> {
-        ENV_LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+        ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     /// Set up a temporary cache directory for test isolation.

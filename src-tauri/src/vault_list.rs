@@ -203,11 +203,7 @@ mod tests {
     fn preferred_vault_list_path_uses_grover_namespace() {
         let result = preferred_app_config_path("vaults.json");
         assert!(result.is_ok());
-        assert!(result
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .contains("com.grover.app"));
+        assert!(result.unwrap().to_str().unwrap().contains("com.grover.app"));
     }
 
     #[test]

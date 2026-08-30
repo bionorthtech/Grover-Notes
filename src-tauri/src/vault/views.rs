@@ -554,10 +554,22 @@ mod pure_helper_tests {
 
     #[test]
     fn only_text_ops_support_regex() {
-        for op in [FilterOp::Contains, FilterOp::Equals, FilterOp::NotContains, FilterOp::NotEquals] {
+        for op in [
+            FilterOp::Contains,
+            FilterOp::Equals,
+            FilterOp::NotContains,
+            FilterOp::NotEquals,
+        ] {
             assert!(supports_regex(&op), "{op:?} should support regex");
         }
-        for op in [FilterOp::AnyOf, FilterOp::NoneOf, FilterOp::IsEmpty, FilterOp::IsNotEmpty, FilterOp::Before, FilterOp::After] {
+        for op in [
+            FilterOp::AnyOf,
+            FilterOp::NoneOf,
+            FilterOp::IsEmpty,
+            FilterOp::IsNotEmpty,
+            FilterOp::Before,
+            FilterOp::After,
+        ] {
             assert!(!supports_regex(&op), "{op:?} should not support regex");
         }
     }
@@ -599,7 +611,10 @@ mod pure_helper_tests {
         assert!(!property_array_matches_value(&values, &yaml("gamma")));
         assert!(!property_array_matches_value(&values, &None));
 
-        assert!(property_array_matches_any(&values, &yaml("- gamma\n- alpha\n")));
+        assert!(property_array_matches_any(
+            &values,
+            &yaml("- gamma\n- alpha\n")
+        ));
         assert!(!property_array_matches_any(&values, &yaml("- gamma\n")));
         assert!(!property_array_matches_any(&values, &None));
     }
@@ -609,8 +624,16 @@ mod pure_helper_tests {
         // `equals` with no value means "is true".
         assert!(evaluate_bool_field(true, &FilterOp::Equals, &None));
         assert!(!evaluate_bool_field(false, &FilterOp::Equals, &None));
-        assert!(evaluate_bool_field(false, &FilterOp::Equals, &yaml("false")));
-        assert!(evaluate_bool_field(true, &FilterOp::NotEquals, &yaml("false")));
+        assert!(evaluate_bool_field(
+            false,
+            &FilterOp::Equals,
+            &yaml("false")
+        ));
+        assert!(evaluate_bool_field(
+            true,
+            &FilterOp::NotEquals,
+            &yaml("false")
+        ));
         assert!(!evaluate_bool_field(true, &FilterOp::NotEquals, &None));
     }
 
@@ -626,9 +649,21 @@ mod pure_helper_tests {
 
     #[test]
     fn scalar_date_compare_needs_two_parseable_dates() {
-        assert!(scalar_date_compare(Some("2026-01-02"), Some("2026-01-01"), |a, b| a > b));
-        assert!(!scalar_date_compare(Some("2026-01-01"), Some("2026-01-02"), |a, b| a > b));
-        assert!(!scalar_date_compare(Some("not-a-date"), Some("2026-01-01"), |a, b| a > b));
+        assert!(scalar_date_compare(
+            Some("2026-01-02"),
+            Some("2026-01-01"),
+            |a, b| a > b
+        ));
+        assert!(!scalar_date_compare(
+            Some("2026-01-01"),
+            Some("2026-01-02"),
+            |a, b| a > b
+        ));
+        assert!(!scalar_date_compare(
+            Some("not-a-date"),
+            Some("2026-01-01"),
+            |a, b| a > b
+        ));
         assert!(!scalar_date_compare(None, Some("2026-01-01"), |a, b| a > b));
         assert!(!scalar_date_compare(Some("2026-01-01"), None, |a, b| a > b));
     }
