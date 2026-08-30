@@ -59,13 +59,24 @@ describe('ImportSourceDialog', () => {
   })
 
   it('surfaces a fetch error', async () => {
-    fetchAndDetectMock.mockResolvedValue({ ok: false, error: 'Could not fetch the URL: boom' })
+    fetchAndDetectMock.mockResolvedValue({ ok: false, code: 'fetch-failed', detail: 'boom' })
     render(<ImportSourceDialog open onImport={vi.fn()} onCancel={vi.fn()} />)
 
     fireEvent.change(screen.getByPlaceholderText(/reddit\.com/i), { target: { value: 'https://example.com/x' } })
     fireEvent.click(screen.getByText('Fetch'))
 
     expect(await screen.findByText(/Could not fetch the URL/i)).toBeInTheDocument()
+  })
+
+  it('renders localized copy and drops the English plural suffix', async () => {
+    render(<ImportSourceDialog open locale="de-DE" onImport={vi.fn()} onCancel={vi.fn()} />)
+    expect(screen.getByText('Quelle importieren')).toBeInTheDocument()
+    expect(screen.getByText('Abrufen')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByPlaceholderText(/Reddit-Threads/i), { target: { value: REDDIT_JSON } })
+    // German template is "{count} Dateien{plural}" — {plural} must resolve to ''.
+    const summary = await screen.findByText(/Dateien/)
+    expect(summary.textContent).not.toMatch(/\{plural\}|Dateiens/)
   })
 
   it('calls onCancel from the Cancel button', () => {

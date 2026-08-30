@@ -11,9 +11,20 @@ export { webClipToSourceNote } from './web'
 export { htmlToMarkdown } from './html'
 export { rewriteAssetUrls } from './assets'
 
+/**
+ * Why a machine-readable code and not a message: these transforms are pure and
+ * must stay free of any i18n dependency, so the UI layer owns the wording.
+ */
+export type DetectErrorCode =
+  | 'empty'
+  | 'not-json-or-html'
+  | 'unrecognized'
+  | 'not-http-url'
+  | 'fetch-failed'
+
 export type DetectResult =
   | { ok: true; note: SourceNote }
-  | { ok: false; error: string }
+  | { ok: false; code: DetectErrorCode; detail?: string }
 
 function looksLikeHtml(text: string): boolean {
   return /<\s*(html|body|div|p|article|h[1-6]|table)\b/i.test(text)
@@ -26,15 +37,15 @@ function looksLikeHtml(text: string): boolean {
  */
 export function detectAndTransform(text: string): DetectResult {
   const trimmed = text.trim()
-  if (!trimmed) return { ok: false, error: 'Paste a Reddit thread .json, a forum topic .json, or an article’s HTML.' }
+  if (!trimmed) return { ok: false, code: 'empty' }
   let parsed: unknown
   try {
     parsed = JSON.parse(trimmed)
   } catch {
     if (looksLikeHtml(trimmed)) return { ok: true, note: webClipToSourceNote(trimmed) }
-    return { ok: false, error: 'That isn’t valid JSON or HTML.' }
+    return { ok: false, code: 'not-json-or-html' }
   }
   if (Array.isArray(parsed)) return { ok: true, note: redditThreadToSourceNote(parsed) }
   if (looksLikeDiscourse(parsed)) return { ok: true, note: discourseToSourceNote(parsed) }
-  return { ok: false, error: 'Unrecognized format — expected Reddit or forum data, or article HTML.' }
+  return { ok: false, code: 'unrecognized' }
 }

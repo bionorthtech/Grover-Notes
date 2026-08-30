@@ -43,12 +43,12 @@ export async function downloadAssets(vaultPath: string, destDir: string, urls: s
 export async function fetchAndDetect(rawUrl: string): Promise<DetectResult> {
   const target = normalizeFetchUrl(rawUrl)
   if (!/^https?:\/\//i.test(target)) {
-    return { ok: false, error: 'Enter an http(s) URL to fetch.' }
+    return { ok: false, code: 'not-http-url' }
   }
   try {
     const body = await invoke<string>('ingest_fetch', { url: target })
     return detectAndTransform(body)
   } catch (error) {
-    return { ok: false, error: `Could not fetch the URL: ${String(error)}` }
+    return { ok: false, code: 'fetch-failed', detail: String(error) }
   }
 }

@@ -23,7 +23,7 @@ describe('detectAndTransform', () => {
 
   it('rejects empty, non-JSON-non-HTML, and unknown JSON shapes', () => {
     expect(detectAndTransform('  ')).toMatchObject({ ok: false })
-    expect(detectAndTransform('not json or html')).toMatchObject({ ok: false, error: expect.stringMatching(/json or html/i) })
-    expect(detectAndTransform('{"foo":1}')).toMatchObject({ ok: false, error: expect.stringMatching(/unrecognized/i) })
+    expect(detectAndTransform('not json or html')).toMatchObject({ ok: false, code: 'not-json-or-html' })
+    expect(detectAndTransform('{"foo":1}')).toMatchObject({ ok: false, code: 'unrecognized' })
   })
 })

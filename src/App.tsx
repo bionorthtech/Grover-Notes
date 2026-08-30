@@ -688,9 +688,9 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
         await persistAndOpenNote(entry, content)
       }
       trackEvent('source_imported', { source: note.source, assets: note.assets.length, savedAssets: savedNames.filter(Boolean).length })
-      setToastMessage(`Imported ${sourceTypeLabel(note.source)}.`)
+      setToastMessage(translate(appLocale, 'ingest.toast.imported', { type: sourceTypeLabel(note.source) }))
     } catch {
-      setToastMessage('Could not import the source.')
+      setToastMessage(translate(appLocale, 'ingest.toast.failed'))
     }
   }
   const dailyNotes = useDailyNotes({
@@ -2069,6 +2069,7 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
           open={importDialogOpen}
           onImport={(note) => { void importSource(note) }}
           onCancel={() => setImportDialogOpen(false)}
+          locale={appLocale}
         />
         <McpSetupDialog open={mcpSetupDialog.open} status={mcpSetupDialog.status} busyAction={mcpSetupDialog.busyAction} manualConfigSnippet={mcpSetupDialog.manualConfigSnippet} manualConfigLoading={mcpSetupDialog.manualConfigLoading} manualConfigError={mcpSetupDialog.manualConfigError} locale={appLocale} onClose={mcpSetupDialog.closeDialog} onConnect={mcpSetupDialog.connect} onCopyManualConfig={mcpSetupDialog.copyManualConfig} onDisconnect={mcpSetupDialog.disconnect} onLoadManualConfig={mcpSetupDialog.loadManualConfig} />
         <CloneVaultModal key={dialogs.showCloneVault ? 'clone-open' : 'clone-closed'} open={dialogs.showCloneVault} onClose={dialogs.closeCloneVault} onVaultCloned={vaultSwitcher.handleVaultCloned} />

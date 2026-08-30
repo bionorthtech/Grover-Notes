@@ -61,6 +61,6 @@ describe('fetchAndDetect', () => {
     invokeMock.mockRejectedValue('boom')
     const result = await fetchAndDetect('https://example.com/x')
     expect(result).toMatchObject({ ok: false })
-    expect(result.ok === false && result.error).toMatch(/could not fetch/i)
+    expect(result).toMatchObject({ ok: false, code: 'fetch-failed', detail: expect.stringContaining('boom') })
   })
 })
