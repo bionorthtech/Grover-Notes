@@ -97,5 +97,12 @@ The Tolaria base ships several libraries that shortcut multiple features below:
   and get their stale MCP entry migrated. Do not "clean these up" in a rename pass —
   a blanket rename previously collapsed the MCP pair into one value and silently
   disabled that migration.
-- **Updater endpoint** currently points at `bionorthtech.github.io/grover-notes`, which
-  does not host releases yet; wire up or disable before shipping auto-update.
+- **Updater endpoint — no code change needed, just a release step.** The config points
+  at `bionorthtech.github.io/grover-notes/stable/latest.json`, which currently 404s only
+  because GitHub Pages has never been deployed for this repo (no release has been cut).
+  The plumbing is already correct: `.github/workflows/deploy-docs.yml` builds
+  `stable/latest.json` from the release assets and publishes it to Pages. Verified that a
+  failing check degrades gracefully — `useUpdater` catches it, and `UpdateBanner`
+  explicitly excludes the `error` state, so users see nothing rather than a broken
+  banner. It starts working once the first release publishes and Pages deploys; no need
+  to disable the updater.

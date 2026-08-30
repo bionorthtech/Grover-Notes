@@ -530,3 +530,106 @@ fn evaluate_bool_field(field_val: bool, op: &FilterOp, value: &Option<serde_yaml
         _ => false,
     }
 }
+
+#[cfg(test)]
+mod pure_helper_tests {
+    use super::*;
+
+    fn yaml(text: &str) -> Option<serde_yaml::Value> {
+        Some(serde_yaml::from_str(text).unwrap())
+    }
+
+    fn strings(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| (*value).to_string()).collect()
+    }
+
+    #[test]
+    fn build_regex_is_case_insensitive_and_rejects_invalid_patterns() {
+        let regex = build_regex("hello").unwrap();
+        assert!(regex.is_match("HELLO world"));
+        assert!(build_regex("^a.*z$").is_some());
+        // Unbalanced bracket is not a valid pattern.
+        assert!(build_regex("[unclosed").is_none());
+    }
+
+    #[test]
+    fn only_text_ops_support_regex() {
+        for op in [FilterOp::Contains, FilterOp::Equals, FilterOp::NotContains, FilterOp::NotEquals] {
+            assert!(supports_regex(&op), "{op:?} should support regex");
+        }
+        for op in [FilterOp::AnyOf, FilterOp::NoneOf, FilterOp::IsEmpty, FilterOp::IsNotEmpty, FilterOp::Before, FilterOp::After] {
+            assert!(!supports_regex(&op), "{op:?} should not support regex");
+        }
+    }
+
+    #[test]
+    fn scalar_equals_ignores_case_and_treats_both_missing_as_equal() {
+        assert!(scalar_equals(Some("Done"), Some("done")));
+        assert!(!scalar_equals(Some("Done"), Some("Active")));
+        assert!(scalar_equals(None, None));
+        assert!(!scalar_equals(Some("Done"), None));
+        assert!(!scalar_equals(None, Some("Done")));
+    }
+
+    #[test]
+    fn scalar_contains_is_case_insensitive_and_false_when_either_side_is_missing() {
+        assert!(scalar_contains(Some("Weekly Review"), Some("review")));
+        assert!(!scalar_contains(Some("Weekly Review"), Some("monthly")));
+        assert!(!scalar_contains(None, Some("review")));
+        assert!(!scalar_contains(Some("Weekly Review"), None));
+    }
+
+    #[test]
+    fn scalar_matches_any_compares_against_a_yaml_list() {
+        let options = yaml("- Active\n- Done\n");
+        assert!(scalar_matches_any(Some("done"), &options));
+        assert!(!scalar_matches_any(Some("Paused"), &options));
+        assert!(!scalar_matches_any(None, &options));
+        // A non-list value yields no candidates.
+        assert!(!scalar_matches_any(Some("Done"), &yaml("Done")));
+    }
+
+    #[test]
+    fn property_array_helpers_match_case_insensitively() {
+        let values = strings(&["Alpha", "Beta"]);
+        assert!(property_array_contains(&values, "alpha"));
+        assert!(!property_array_contains(&values, "gamma"));
+
+        assert!(property_array_matches_value(&values, &yaml("beta")));
+        assert!(!property_array_matches_value(&values, &yaml("gamma")));
+        assert!(!property_array_matches_value(&values, &None));
+
+        assert!(property_array_matches_any(&values, &yaml("- gamma\n- alpha\n")));
+        assert!(!property_array_matches_any(&values, &yaml("- gamma\n")));
+        assert!(!property_array_matches_any(&values, &None));
+    }
+
+    #[test]
+    fn bool_field_equals_defaults_to_true_when_no_value_is_given() {
+        // `equals` with no value means "is true".
+        assert!(evaluate_bool_field(true, &FilterOp::Equals, &None));
+        assert!(!evaluate_bool_field(false, &FilterOp::Equals, &None));
+        assert!(evaluate_bool_field(false, &FilterOp::Equals, &yaml("false")));
+        assert!(evaluate_bool_field(true, &FilterOp::NotEquals, &yaml("false")));
+        assert!(!evaluate_bool_field(true, &FilterOp::NotEquals, &None));
+    }
+
+    #[test]
+    fn bool_field_emptiness_maps_to_the_flag_itself() {
+        assert!(evaluate_bool_field(false, &FilterOp::IsEmpty, &None));
+        assert!(!evaluate_bool_field(true, &FilterOp::IsEmpty, &None));
+        assert!(evaluate_bool_field(true, &FilterOp::IsNotEmpty, &None));
+        assert!(!evaluate_bool_field(false, &FilterOp::IsNotEmpty, &None));
+        // Ops that make no sense for a bool never match.
+        assert!(!evaluate_bool_field(true, &FilterOp::Contains, &None));
+    }
+
+    #[test]
+    fn scalar_date_compare_needs_two_parseable_dates() {
+        assert!(scalar_date_compare(Some("2026-01-02"), Some("2026-01-01"), |a, b| a > b));
+        assert!(!scalar_date_compare(Some("2026-01-01"), Some("2026-01-02"), |a, b| a > b));
+        assert!(!scalar_date_compare(Some("not-a-date"), Some("2026-01-01"), |a, b| a > b));
+        assert!(!scalar_date_compare(None, Some("2026-01-01"), |a, b| a > b));
+        assert!(!scalar_date_compare(Some("2026-01-01"), None, |a, b| a > b));
+    }
+}
