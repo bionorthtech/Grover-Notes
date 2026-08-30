@@ -41,7 +41,7 @@ describe('source note model', () => {
 
   it('makes a filesystem-safe, source-prefixed slug', () => {
     expect(sourceSlug('reddit', 'How do you organize: notes?')).toBe('reddit-how-do-you-organize-notes')
-    expect(sourceSlug('discord', '   ')).toBe('discord-untitled')
+    expect(sourceSlug('web', '   ')).toBe('web-untitled')
   })
 
   it('does not leave a trailing dash when a long title is cut mid-word', () => {
@@ -52,6 +52,6 @@ describe('source note model', () => {
   })
 
   it('labels source kinds', () => {
-    expect(sourceTypeLabel('discord')).toBe('Discord Channel')
+    expect(sourceTypeLabel('discourse')).toBe('Forum Post')
   })
 })

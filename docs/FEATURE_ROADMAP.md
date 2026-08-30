@@ -67,8 +67,8 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 
 ## Shipped beyond the roadmap
 
-- **Archival ingest (Source notes)** — import Reddit threads, Discord channels,
-  forum topics, and web articles as typed notes that read back fully offline.
+- **Archival ingest (Source notes)** — import Reddit threads, forum topics, and
+  web articles as typed notes that read back fully offline.
   Documented in [`INGEST.md`](./INGEST.md) and
   [`adr/0138-local-archival-ingest.md`](./adr/0138-local-archival-ingest.md).
   Related future items from the table above: 23 (PDF/image OCR) and a ZIM/Kiwix

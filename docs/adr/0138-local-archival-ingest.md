@@ -2,7 +2,8 @@
 type: ADR
 id: "0138"
 title: "Local-first archival ingest (Reddit / Discord / forums / web)"
-status: active
+status: superseded
+superseded_by: "0139"
 date: 2026-06-16
 ---
 

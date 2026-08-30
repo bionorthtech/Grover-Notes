@@ -92,7 +92,7 @@ function ImportSourceBody({ onImport, onCancel }: Omit<ImportSourceDialogProps, 
         value={text}
         onChange={(event) => { setText(event.target.value); setFetchedNote(null) }}
         spellCheck={false}
-        placeholder="Paste a Reddit thread’s .json, a Discord/forum export, or an article’s HTML…"
+        placeholder="Paste a Reddit thread’s .json, a forum topic’s .json, or an article’s HTML…"
         className="min-h-[120px] resize-none font-mono text-xs"
       />
 
@@ -110,7 +110,7 @@ function ImportSourceBody({ onImport, onCancel }: Omit<ImportSourceDialogProps, 
   )
 }
 
-/** Paste- or fetch-to-import: turns external Reddit/Discord/forum data into a typed Source note. */
+/** Paste- or fetch-to-import: turns external Reddit/forum/web data into a typed Source note. */
 export function ImportSourceDialog({ open, onImport, onCancel }: ImportSourceDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onCancel() }}>

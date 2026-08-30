@@ -1,7 +1,7 @@
 # Archival Ingest — Source Notes
 
-Grover can archive external content — Reddit threads, Discord channels, forum
-topics, and web articles — as ordinary typed notes that live in your vault and
+Grover can archive external content — Reddit threads, forum topics, and web
+articles — as ordinary typed notes that live in your vault and
 read back **fully offline**. Nothing becomes a proprietary object: every import
 is a Markdown note with provenance frontmatter, so it flows through the typed
 graph, query engine, vault health, and AI exactly like any note you write.
@@ -22,10 +22,9 @@ Open the command palette and run **Import source** (also grouped under
    topic, or any article) and click **Fetch**. Grover fetches it natively
    (see [why a native fetch](#why-fetching-happens-in-rust)), detects the
    format, and shows a preview.
-2. **Paste content** — paste exported JSON or raw HTML directly. This is the
-   path for sources with no anonymous read API (notably **Discord**, via a
-   [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) JSON
-   export).
+2. **Paste content** — paste a thread's `.json` or an article's raw HTML
+   directly. Useful when a page is behind a login, already saved locally, or
+   otherwise not reachable by a plain fetch.
 
 The preview shows the detected type, title, asset count, and line count. Click
 **Import note** to write it into the vault.
@@ -41,7 +40,6 @@ archive stays readable with no network.
 | Source | Detected from | Input you provide | Note `type` |
 |---|---|---|---|
 | **Reddit** | a 2-element JSON array `[post, comments]` | the thread URL (auto-suffixed `.json`) or pasted `.json` | `Reddit Thread` |
-| **Discord** | a JSON object with `messages[]` | a DiscordChatExporter JSON export (paste) | `Discord Channel` |
 | **Discourse** | a JSON object with `post_stream.posts` | the topic URL (auto-suffixed `.json`) or pasted JSON | `Forum Post` |
 | **Web** | raw HTML that isn't valid JSON | an article URL or pasted HTML | `Web Clip` |
 
@@ -55,9 +53,6 @@ Detection is heuristic and pure — see `detectAndTransform` in
   are embedded inline so they render and localize: a direct image post, a
   **gallery** (`gallery_data` → `media_metadata`), or the **preview** image.
   Reddit HTML-escapes `&` in media URLs (`&amp;`); these are un-escaped.
-- **Discord** — rendered as `author · time` headers with quoted message lines.
-  Image attachments embed inline; other attachments (pdf, zip, …) become links.
-  All attachments are downloaded for offline use.
 - **Discourse** — each post's `cooked` HTML is converted to Markdown; the first
   poster becomes the note `author`.
 - **Web** — a light readability pass prefers `<article>`/`<main>` and strips
@@ -116,7 +111,7 @@ flowchart TD
     end
     subgraph Pure["Pure transforms — src/lib/ingest/*"]
         DT[detectAndTransform]
-        R[reddit] & DC[discord] & DQ[discourse] & W[web/html]
+        R[reddit] & DQ[discourse] & W[web/html]
         SRC[buildSourceNoteMarkdown / rewriteAssetUrls]
     end
     subgraph Rust["Rust — src-tauri/src/commands/ingest.rs"]
@@ -136,7 +131,6 @@ flowchart TD
 |---|---|
 | `src/lib/ingest/source.ts` | `SourceNote` model, slug, frontmatter serialization |
 | `src/lib/ingest/reddit.ts` | Reddit thread `.json` → `SourceNote` (+ media) |
-| `src/lib/ingest/discord.ts` | DiscordChatExporter export → `SourceNote` |
 | `src/lib/ingest/discourse.ts` | Discourse topic JSON → `SourceNote` |
 | `src/lib/ingest/web.ts` | HTML web clip → `SourceNote` (readability) |
 | `src/lib/ingest/html.ts` | Minimal HTML → Markdown (DOMParser) |
@@ -199,9 +193,10 @@ the dialog states, and the Rust fetch/download/404/invalid-scheme paths.
 
 ## Known limitations & future work
 
-- **Offline-only sources require an export.** Discord has no anonymous read API,
-  so it's import-by-export (DiscordChatExporter JSON). Live Discord (bot/OAuth)
-  is future work.
+- **Only anonymously-readable sources.** Ingest deliberately covers sources that
+  expose public, unauthenticated content. Anything requiring login or an API
+  token (Discord, private forums, paywalled articles) is out of scope — it would
+  mean credential storage and an auth flow. See ADR 0139.
 - **No size cap** on downloads — fine for a desktop archival tool, would matter
   server-side.
 - **Heuristic detection.** An arbitrary JSON array is treated as a Reddit

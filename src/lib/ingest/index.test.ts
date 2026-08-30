@@ -10,11 +10,6 @@ describe('detectAndTransform', () => {
     expect(result.ok && result.note.source).toBe('reddit')
   })
 
-  it('detects a Discord export object', () => {
-    const result = detectAndTransform(JSON.stringify({ channel: { name: 'general' }, messages: [] }))
-    expect(result.ok && result.note.source).toBe('discord')
-  })
-
   it('detects a Discourse topic', () => {
     const result = detectAndTransform(JSON.stringify({ title: 'T', post_stream: { posts: [{ username: 'a', cooked: '<p>hi</p>' }] } }))
     expect(result.ok && result.note.source).toBe('discourse')

@@ -1,15 +1,14 @@
 /**
  * Local-first archival ingest: shared "Source" note model. Every imported item
- * (Reddit thread, Discord channel, forum post, web clip) becomes a typed note
- * with provenance frontmatter so it flows into the typed graph, query engine,
- * vault health, and AI like any other note. Pure + synchronous.
+ * (Reddit thread, forum post, web clip) becomes a typed note with provenance
+ * frontmatter so it flows into the typed graph, query engine, vault health, and
+ * AI like any other note. Pure + synchronous.
  */
 
-export type SourceKind = 'reddit' | 'discord' | 'discourse' | 'web'
+export type SourceKind = 'reddit' | 'discourse' | 'web'
 
 const TYPE_LABEL: Record<SourceKind, string> = {
   reddit: 'Reddit Thread',
-  discord: 'Discord Channel',
   discourse: 'Forum Post',
   web: 'Web Clip',
 }
