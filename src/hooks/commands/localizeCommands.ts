@@ -13,6 +13,18 @@ const GROUP_LABEL_KEYS = {
 } satisfies Record<CommandGroup, TranslationKey>
 
 const STATIC_LABEL_KEYS: Partial<Record<string, TranslationKey>> = {
+  'table-format': 'command.table.format',
+  'table-insert-row-below': 'command.table.insertRowBelow',
+  'table-insert-row-above': 'command.table.insertRowAbove',
+  'table-delete-row': 'command.table.deleteRow',
+  'table-insert-column-right': 'command.table.insertColumnRight',
+  'table-insert-column-left': 'command.table.insertColumnLeft',
+  'table-delete-column': 'command.table.deleteColumn',
+  'table-sort-asc': 'command.table.sortAsc',
+  'table-sort-desc': 'command.table.sortDesc',
+  'table-align-left': 'command.table.alignLeft',
+  'table-align-center': 'command.table.alignCenter',
+  'table-align-right': 'command.table.alignRight',
   'search-notes': 'command.navigation.searchNotes',
   'go-all': 'command.navigation.goAllNotes',
   'go-archived': 'command.navigation.goArchived',
