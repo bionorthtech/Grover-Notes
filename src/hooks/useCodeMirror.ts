@@ -16,7 +16,8 @@ import { markdownLanguage } from '../extensions/markdownHighlight'
 import { RUNTIME_STYLE_NONCE } from '../lib/runtimeStyleNonce'
 import { resolveArrowLigatureInput } from '../utils/arrowLigatures'
 import { zoomCursorFix } from '../extensions/zoomCursorFix'
-import { markdownTableKeymap } from '../extensions/markdownTableKeymap'
+import { markdownTableKeymap, formatTableCommand, tableEditCommand } from '../extensions/markdownTableKeymap'
+import { MARKDOWN_TABLE_EDIT_EVENT, type MarkdownTableEditDetail } from '../components/markdownTableEvents'
 import { nativeTextAssistanceDisabledAttributes } from '../lib/nativeTextAssistance'
 
 const FONT_FAMILY = '"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
@@ -285,8 +286,19 @@ export function useCodeMirror(
     const handleZoomChange = () => { view.requestMeasure() }
     window.addEventListener('grover-zoom-change', handleZoomChange)
 
+    // Command-palette table actions arrive here; the palette has no view ref.
+    const handleTableEdit = (event: Event) => {
+      const detail = (event as CustomEvent<MarkdownTableEditDetail>).detail
+      if (!detail) return
+      if ('format' in detail) formatTableCommand(view)
+      else tableEditCommand(detail.edit)(view)
+      view.focus()
+    }
+    window.addEventListener(MARKDOWN_TABLE_EDIT_EVENT, handleTableEdit)
+
     return () => {
       window.removeEventListener('grover-zoom-change', handleZoomChange)
+      window.removeEventListener(MARKDOWN_TABLE_EDIT_EVENT, handleTableEdit)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (parent as any).__cmView
       view.destroy()
