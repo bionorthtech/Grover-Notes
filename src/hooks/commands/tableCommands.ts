@@ -1,4 +1,5 @@
 import { requestMarkdownTableEdit } from '../../components/markdownTableEvents'
+import { trackEvent } from '../../lib/telemetry'
 import type { TableEdit } from '../../lib/markdownTableEditing'
 import type { CommandAction } from './types'
 
@@ -44,6 +45,10 @@ export function buildTableCommands(config: TableCommandsConfig): CommandAction[]
     group: 'Note' as const,
     keywords: spec.keywords,
     enabled,
-    execute: () => requestMarkdownTableEdit(spec.detail),
+    execute: () => {
+      // Command id only — never note content.
+      trackEvent('table_command_used', { command: spec.id })
+      requestMarkdownTableEdit(spec.detail)
+    },
   }))
 }

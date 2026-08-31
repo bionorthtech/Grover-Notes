@@ -207,6 +207,38 @@ External content is archived as ordinary typed notes, never a proprietary object
 
 The only non-pure steps live in the Rust `ingest` commands: `ingest_fetch` (live URL → text, with a descriptive User-Agent because browser fetches hit CORS and Reddit/forums reject the default agent) and `ingest_download_assets`, which copies referenced images/files into `Sources/_assets/<slug>/` so the archive re-reads fully offline. Downloaded filenames are sanitized and de-duplicated, then returned index-aligned with the input URLs (empty string = skipped/failed); `rewriteAssetUrls` points the note body at the local copies, leaving any un-downloaded asset on its original remote URL.
 
+### Markdown tables
+
+Table editing is split into three layers so that almost all of it is testable
+without an editor instance:
+
+1. **Grid model** (`src/lib/markdownTable.ts`) — `parseMarkdownTable` /
+   `formatMarkdownTable` plus row, column, alignment and sort operations over a
+   `{ header, alignments, rows }` value. Pure and editor-independent.
+2. **Cursor layer** (`src/lib/markdownTableEditing.ts`) — maps a `{ line, ch }`
+   cursor onto the grid: which cell the cursor is in, Tab/Shift-Tab traversal
+   (appending a row past the last cell), and structural edits that reformat in
+   place. Still pure: it takes and returns plain lines.
+3. **CodeMirror adapter** (`src/extensions/markdownTableKeymap.ts`) — converts
+   between CodeMirror's document/selection and those plain lines. Bound at
+   `Prec.highest` so Tab reaches tables first, but every command returns `false`
+   outside a table so Tab falls through to normal indentation.
+
+Two details are load-bearing:
+
+- **Column widths use display width, not string length.** `cellWidth` counts
+  East Asian Wide characters and emoji as two columns and combining marks as
+  zero. Grover ships 18 locales including zh/ja/ko, so length-based padding
+  would leave those tables visibly ragged after formatting.
+- **Columns have a three-character minimum**, because the delimiter row needs
+  at least `---`. Formatting is therefore idempotent — reformatting an already
+  formatted table is a no-op.
+
+Palette commands reach the editor through the `grover:markdown-table-edit`
+window event (see `src/components/markdownTableEvents.ts`), matching the
+existing `grover:focus-note-icon-property` pattern, because the command palette
+holds no reference to the CodeMirror view.
+
 ### Note Content Freshness
 
 The renderer may cache recently opened or preloaded markdown content, but cached content is only a performance hint. `useTabManagement` can reuse cached text immediately when it carries the same `modifiedAt` and `fileSize` identity as the current `VaultEntry`; otherwise it validates the cached string with the `validate_note_content` Tauri command. That command re-enters the same vault path boundary checks as `get_note_content` and compares the cached text against the current on-disk file bytes. A mismatch, missing file, or unreadable file falls back to the normal fresh-read path and existing missing/unreadable recovery. Background note prefetch is bounded to a small number of concurrent native reads, and a note opened while queued is promoted to foreground instead of waiting behind the prefetch backlog. Note-open entry objects are re-normalized at the tab boundary, so transient reload or bridge payloads with missing display metadata fall back to filename/title defaults before editor chrome renders; entries without a usable path are ignored instead of opening a broken tab.

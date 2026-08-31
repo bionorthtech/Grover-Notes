@@ -23,7 +23,7 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 | # | Feature | Obsidian analogue | Notes / reuse |
 |---|---------|-------------------|---------------|
 | 1 | Natural-language date parsing | Natural Language Dates | Parse "next Friday" → date link on input; reuse editor input handlers. |
-| 2 | Visual table formatting / sort | Advanced Tables | Keyboard nav + sort over markdown tables in the editor. |
+| 2 | ~~Visual table formatting / sort~~ **Shipped** | Advanced Tables | Done: `src/lib/markdownTable*.ts` + `src/extensions/markdownTableKeymap.ts`. Tab/Shift-Tab cell nav, Mod-Shift-F format, 12 palette commands (insert/delete row+column, sort, align). Display-width aware so CJK tables align. |
 | 3 | Word-processor formatting toolbar | Editing Toolbar | Floating toolbar applying BlockNote marks; reuse shadcn buttons. |
 | 4 | Typewriter scroll centering | Typewriter Scroll | Keep active line centered; CodeMirror/scroll listener. |
 | 5 | Roam-style outline management | Outliner | Indent/collapse/move nested bullets via keybindings. |
@@ -62,6 +62,19 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 | 23 | PDF/image OCR search | Text Extractor | Tesseract OCR; index extracted text into search. |
 | 24 | One-click third-party migrations | Importer | Notion/Evernote/Apple Notes/Google Keep → markdown. |
 | 25 | External task interactivity | Todoist Sync | Bidirectional Todoist sync embedded in notes. |
+
+---
+
+## Prioritization evidence
+
+> **Prioritization note (2026-08).** Obsidian community-plugin install counts
+> (`community-plugin-stats.json`, 7,085 plugins) put **editor ergonomics at
+> 12.5%** of plugin demand — second only to drawing, and about the same size as
+> the entire power-user block (querying + templating + tasks) that Grover has
+> already built. That is why Phase A ergonomics items are being pulled ahead of
+> Phase B/C. The same data shows **spaced repetition at 0.8%** despite its
+> cultural prominence, so item 15 is deliberately deprioritized; music notation
+> (20) and geographic maps (22) do not appear in the top 45 plugins at all.
 
 ---
 
