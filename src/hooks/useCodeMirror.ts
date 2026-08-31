@@ -16,6 +16,7 @@ import { markdownLanguage } from '../extensions/markdownHighlight'
 import { RUNTIME_STYLE_NONCE } from '../lib/runtimeStyleNonce'
 import { resolveArrowLigatureInput } from '../utils/arrowLigatures'
 import { zoomCursorFix } from '../extensions/zoomCursorFix'
+import { markdownTableKeymap } from '../extensions/markdownTableKeymap'
 import { nativeTextAssistanceDisabledAttributes } from '../lib/nativeTextAssistance'
 
 const FONT_FAMILY = '"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
@@ -250,6 +251,7 @@ export function useCodeMirror(
         buildAutoTextDirectionExtension(),
         history(),
         buildArrowLigaturesExtension(),
+        markdownTableKeymap(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         buildSaveKeymap(callbacksRef),
         buildBaseTheme(),
