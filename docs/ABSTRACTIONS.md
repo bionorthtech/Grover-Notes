@@ -234,6 +234,16 @@ Two details are load-bearing:
   at least `---`. Formatting is therefore idempotent — reformatting an already
   formatted table is a no-op.
 
+**Which editor these apply to.** These commands operate on raw markdown, so
+they act on the CodeMirror raw editor. The rich (BlockNote) editor has its own
+native `table` block from `defaultBlockSpecs` — the schema in
+`editorSchema.tsx` extends rather than replaces the defaults — so rich mode
+already has table handles and does not need them. Known rough edge: the palette
+commands are enabled whenever a text note is active, so choosing one while the
+rich editor is showing is a silent no-op. Gating them on raw mode would mean
+lifting the raw-mode flag out of `Editor` (it currently lives behind
+`rawToggleRef`), which has not been done yet.
+
 Palette commands reach the editor through the `grover:markdown-table-edit`
 window event (see `src/components/markdownTableEvents.ts`), matching the
 existing `grover:focus-note-icon-property` pattern, because the command palette

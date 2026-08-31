@@ -23,7 +23,7 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 | # | Feature | Obsidian analogue | Notes / reuse |
 |---|---------|-------------------|---------------|
 | 1 | Natural-language date parsing | Natural Language Dates | Parse "next Friday" → date link on input; reuse editor input handlers. |
-| 2 | ~~Visual table formatting / sort~~ **Shipped** | Advanced Tables | Done: `src/lib/markdownTable*.ts` + `src/extensions/markdownTableKeymap.ts`. Tab/Shift-Tab cell nav, Mod-Shift-F format, 12 palette commands (insert/delete row+column, sort, align). Display-width aware so CJK tables align. |
+| 2 | ~~Visual table formatting / sort~~ **Shipped** | Advanced Tables | Done: `src/lib/markdownTable*.ts` + `src/extensions/markdownTableKeymap.ts`. Tab/Shift-Tab cell nav, Mod-Shift-F format, 12 palette commands (insert/delete row+column, sort, align). Display-width aware so CJK tables align. Raw-editor only; rich mode uses BlockNote's native table block. |
 | 3 | Word-processor formatting toolbar | Editing Toolbar | Floating toolbar applying BlockNote marks; reuse shadcn buttons. |
 | 4 | Typewriter scroll centering | Typewriter Scroll | Keep active line centered; CodeMirror/scroll listener. |
 | 5 | Roam-style outline management | Outliner | Indent/collapse/move nested bullets via keybindings. |
