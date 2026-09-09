@@ -72,7 +72,10 @@ Use Codacy as a security and static-analysis gate before a task is considered re
 
 ### Check suite (runs on every push)
 ```bash
-pnpm lint && npx tsc --noEmit && pnpm test && pnpm test:coverage  # frontend ≥70%
+pnpm lint && pnpm typecheck && pnpm test && pnpm test:coverage  # frontend ≥70%
+# NOTE: use `pnpm typecheck` (tsc -b), NOT `tsc --noEmit`. tsconfig.json is a
+# solution-style config ("files": [] + references), so `tsc --noEmit` compiles
+# zero files and always exits 0 — it type-checks nothing.
 cargo test && cargo llvm-cov --manifest-path src-tauri/Cargo.toml --no-clean --fail-under-lines 85
 ```
 

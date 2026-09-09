@@ -73,7 +73,7 @@ STAGED_TS=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx)$' || true)
 if [ -n "$STAGED_TS" ]; then
   echo "  → lint + tsc..."
   pnpm lint --quiet
-  npx tsc --noEmit
+  npx tsc -b
 fi
 
 # Unit tests
