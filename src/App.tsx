@@ -1596,6 +1596,9 @@ function MainApp({ noteWindowParams }: { noteWindowParams: NoteWindowParams | nu
 
   const commands = useAppCommands({
     activeTabPath: notes.activeTabPath, activeTabPathRef: notes.activeTabPathRef,
+    // Mirrors useRawMode: the preference lives in vault config, and raw mode
+    // only actually renders when a note is open.
+    rawEditorActive: vaultConfig.editor_mode === 'raw' && notes.activeTabPath !== null,
     entries: visibleEntries,
     visibleNotesRef,
     multiSelectionCommandRef,

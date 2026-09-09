@@ -18,6 +18,8 @@ import type { GitRepositoryOption } from '../utils/gitRepositories'
 
 interface AppCommandsConfig {
   activeTabPath: string | null
+  /** True when the CodeMirror raw editor is the active surface. */
+  rawEditorActive?: boolean
   activeTabPathRef: React.MutableRefObject<string | null>
   entries: VaultEntry[]
   visibleNotesRef: React.RefObject<VaultEntry[]>
@@ -176,6 +178,7 @@ type CommandRegistrySelectionState = Pick<
 type CommandRegistryCoreActions = Pick<
   CommandRegistryConfig,
   | 'activeTabPath'
+  | 'rawEditorActive'
   | 'entries'
   | 'modifiedCount'
   | 'onQuickOpen'
@@ -502,6 +505,7 @@ function createCommandRegistryCoreConfig(
 ): CommandRegistryCoreActions {
   return {
     activeTabPath: config.activeTabPath,
+    rawEditorActive: config.rawEditorActive,
     entries: config.entries,
     modifiedCount: config.modifiedCount,
     onQuickOpen: config.onQuickOpen,

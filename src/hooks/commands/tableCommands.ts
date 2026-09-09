@@ -6,6 +6,8 @@ import type { CommandAction } from './types'
 interface TableCommandsConfig {
   activeFileKind?: 'markdown' | 'text' | 'binary'
   hasActiveNote: boolean
+  /** True when the CodeMirror raw editor is the active surface. */
+  rawEditorActive: boolean
 }
 
 interface TableCommandSpec {
@@ -31,13 +33,15 @@ const SPECS: TableCommandSpec[] = [
 ]
 
 /**
- * Table actions operate on the raw markdown under the cursor, so they only
- * apply to editable text notes. Each is a no-op unless the cursor is actually
- * inside a table — the editor layer decides that.
+ * Table actions operate on the raw markdown under the cursor, so they require
+ * the CodeMirror raw editor to be showing: the rich editor has its own native
+ * table block, and these edits cannot reach it. Offering them there would be a
+ * silent no-op. Beyond that, each is still a no-op unless the cursor is
+ * actually inside a table — the editor layer decides that.
  */
 export function buildTableCommands(config: TableCommandsConfig): CommandAction[] {
   const activeFileKind = config.activeFileKind ?? 'markdown'
-  const enabled = config.hasActiveNote && activeFileKind !== 'binary'
+  const enabled = config.hasActiveNote && activeFileKind !== 'binary' && config.rawEditorActive
 
   return SPECS.map((spec) => ({
     id: spec.id,

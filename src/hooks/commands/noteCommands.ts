@@ -9,6 +9,8 @@ interface NoteCommandsConfig {
   hasActiveNote: boolean
   activeTabPath: string | null
   activeFileKind?: 'markdown' | 'text' | 'binary'
+  /** True when the CodeMirror raw editor is the active surface. */
+  rawEditorActive?: boolean
   isArchived: boolean
   activeNoteHasIcon?: boolean
   onCreateNote: (type?: string, options?: ImmediateCreateOptions) => void
@@ -124,7 +126,7 @@ function buildCoreNoteCommands(config: NoteCommandsConfig): CommandAction[] {
       execute: config.onPastePlainText,
     }),
     ...buildEditorFindCommands(config),
-    ...buildTableCommands(config),
+    ...buildTableCommands({ ...config, rawEditorActive: config.rawEditorActive ?? false }),
   ]
 }
 

@@ -28,6 +28,8 @@ export { buildViewCommands } from './commands/viewCommands'
 
 interface CommandRegistryConfig {
   activeTabPath: string | null
+  /** True when the CodeMirror raw editor is the active surface. */
+  rawEditorActive?: boolean
   entries: VaultEntry[]
   modifiedCount: number
   activeNoteHasIcon?: boolean
@@ -191,6 +193,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onRestoreDeletedNote, canRestoreDeletedNote,
     selection, noteListFilter, onSetNoteListFilter,
     gitFeaturesEnabled, isGitVault, gitRepositories, onInitializeGit, onPullRepository,
+    rawEditorActive = false,
   } = config
 
   const hasActiveNote = activeTabPath !== null
@@ -245,7 +248,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
   ])
 
   const noteCommands = useMemo(() => buildNoteCommands({
-    hasActiveNote, activeTabPath, activeFileKind: activeEntry?.fileKind ?? 'markdown', isArchived, locale,
+    hasActiveNote, activeTabPath, activeFileKind: activeEntry?.fileKind ?? 'markdown', rawEditorActive, isArchived, locale,
     currentFolderCreateOptions: folderCreateOptions, onCreateNote, onCreateType, onSave,
     onUndo, onRedo, canUndo, canRedo, undoLabel, redoLabel,
     onFindInNote, onReplaceInNote, onPastePlainText,
@@ -258,7 +261,7 @@ export function useCommandRegistry(config: CommandRegistryConfig): import('./com
     onToggleOrganized, isOrganized: activeEntry?.organized ?? false,
     onRestoreDeletedNote, canRestoreDeletedNote,
   }), [
-    hasActiveNote, activeTabPath, activeEntry?.fileKind, isArchived, locale,
+    hasActiveNote, activeTabPath, activeEntry?.fileKind, rawEditorActive, isArchived, locale,
     folderCreateOptions, onCreateNote, onCreateType, onSave, onUndo, onRedo, canUndo, canRedo, undoLabel, redoLabel,
     onFindInNote, onReplaceInNote, onPastePlainText, onDeleteNote, onArchiveNote, onUnarchiveNote,
     onChangeNoteType, onMoveNoteToFolder, canMoveNoteToFolder,
