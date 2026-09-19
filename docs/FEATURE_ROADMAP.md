@@ -26,11 +26,11 @@ The Tolaria base ships several libraries that shortcut multiple features below:
 | 2 | ~~Visual table formatting / sort~~ **Shipped** | Advanced Tables | Done: `src/lib/markdownTable*.ts` + `src/extensions/markdownTableKeymap.ts`. Tab/Shift-Tab cell nav, Mod-Shift-F format, 12 palette commands (insert/delete row+column, sort, align). Display-width aware so CJK tables align. Raw-editor only; rich mode uses BlockNote's native table block. |
 | 3 | Word-processor formatting toolbar | Editing Toolbar | Floating toolbar applying BlockNote marks; reuse shadcn buttons. |
 | 4 | Typewriter scroll centering | Typewriter Scroll | Keep active line centered; CodeMirror/scroll listener. |
-| 5 | Roam-style outline management | Outliner | Indent/collapse/move nested bullets via keybindings. |
+| 5 | ~~Roam-style outline management~~ **Shipped** | Outliner | Done: `src/lib/markdownOutline.ts` + `src/extensions/markdownOutlineKeymap.ts`. Tab/Shift-Tab indent, Alt-Arrow move, 4 palette commands. Children travel with the parent; ordered lists renumber. Raw editor only. Folding not included. |
 | 6 | RegEx global text replacement | Regex Find/Replace | Vault-wide regex rules; reuse search infra. |
 | 7 | Bulk highlights extraction | Extract Highlights | Pull all `==highlights==` to clipboard from a note. |
 | 8 | UI component hiding | Hider | Toggles to hide status bar, ribbons, title bar; CSS vars. |
-| 9 | CSS-variable styling panel | Style Settings | UI panel exposing `--*` tokens in `src/index.css`. |
+| 9 | CSS-variable styling panel | Style Settings | **Blocked by an active ADR — do not start.** [ADR 0013](./adr/0013-remove-theming-system.md) removed user theming as "high maintenance cost for a rarely-used feature", and [ADR 0081](./adr/0081-internal-light-dark-theme-runtime.md) (active) keeps themes app-owned and explicitly defers custom themes, listing user-authored theming as an option it rejected. Needs a superseding ADR before any work. |
 | 10 | Custom file/folder icons | Iconize | Per-path icon assignment in the file explorer. |
 
 ## Phase B — Data & automation

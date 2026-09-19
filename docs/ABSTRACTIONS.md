@@ -249,6 +249,34 @@ window event (see `src/components/markdownTableEvents.ts`), matching the
 existing `grover:focus-note-icon-property` pattern, because the command palette
 holds no reference to the CodeMirror view.
 
+### Markdown list outlining
+
+Outlining mirrors the table split: a pure model
+(`src/lib/markdownOutline.ts`) plus a thin CodeMirror adapter
+(`src/extensions/markdownOutlineKeymap.ts`).
+
+The unit of every operation is an **item block** — the list item plus every
+following line indented deeper than it, so children and wrapped continuation
+lines always travel with their parent. `findItemBlock` stops at a blank line.
+
+- `moveItemUp` / `moveItemDown` swap a block with the adjacent *sibling* (same
+  indent), so an item can never escape its parent, and refuse at the ends of a
+  run. Ordered siblings are renumbered afterwards so a move never leaves `2.`
+  above `1.`.
+- `indentItem` is refused for the first item of a sibling run, because there is
+  nothing to nest under — the same rule Markdown itself applies.
+  `outdentItem` is refused at the top level.
+- The indent step is **inferred** from the first nested item rather than
+  assumed, so 2-space and 4-space documents both round-trip unchanged.
+
+**Keymap precedence is load-bearing.** Tab is claimed three times over:
+the table keymap at `Prec.highest`, the outline keymap at `Prec.high`, and the
+default keymap last. Every command returns `false` when it does not apply, so
+Tab falls through cleanly — inside a table it moves cells, on a list item it
+indents, and in prose the default indentation runs.
+`useCodeMirror.keymapPrecedence.test.ts` dispatches real Tab keydown events to
+hold that ordering.
+
 ### Note Content Freshness
 
 The renderer may cache recently opened or preloaded markdown content, but cached content is only a performance hint. `useTabManagement` can reuse cached text immediately when it carries the same `modifiedAt` and `fileSize` identity as the current `VaultEntry`; otherwise it validates the cached string with the `validate_note_content` Tauri command. That command re-enters the same vault path boundary checks as `get_note_content` and compares the cached text against the current on-disk file bytes. A mismatch, missing file, or unreadable file falls back to the normal fresh-read path and existing missing/unreadable recovery. Background note prefetch is bounded to a small number of concurrent native reads, and a note opened while queued is promoted to foreground instead of waiting behind the prefetch backlog. Note-open entry objects are re-normalized at the tab boundary, so transient reload or bridge payloads with missing display metadata fall back to filename/title defaults before editor chrome renders; entries without a usable path are ignored instead of opening a broken tab.
