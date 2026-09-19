@@ -1,6 +1,7 @@
 import { APP_COMMAND_IDS, getAppCommandShortcutDisplay } from '../appCommandCatalog'
 import { buildEditorFindCommands } from './editorFindCommands'
 import { buildTableCommands } from './tableCommands'
+import { buildOutlineCommands } from './outlineCommands'
 import { translate, type AppLocale } from '../../lib/i18n'
 import type { ImmediateCreateOptions } from '../useNoteCreation'
 import type { CommandAction } from './types'
@@ -127,6 +128,7 @@ function buildCoreNoteCommands(config: NoteCommandsConfig): CommandAction[] {
     }),
     ...buildEditorFindCommands(config),
     ...buildTableCommands({ ...config, rawEditorActive: config.rawEditorActive ?? false }),
+    ...buildOutlineCommands({ ...config, rawEditorActive: config.rawEditorActive ?? false }),
   ]
 }
 

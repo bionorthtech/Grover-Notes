@@ -18,7 +18,11 @@ import { resolveArrowLigatureInput } from '../utils/arrowLigatures'
 import { zoomCursorFix } from '../extensions/zoomCursorFix'
 import { markdownTableKeymap, formatTableCommand, tableEditCommand } from '../extensions/markdownTableKeymap'
 import { MARKDOWN_TABLE_EDIT_EVENT, type MarkdownTableEditDetail } from '../components/markdownTableEvents'
-import { markdownOutlineKeymap } from '../extensions/markdownOutlineKeymap'
+import {
+  markdownOutlineKeymap, indentListItemCommand, outdentListItemCommand,
+  moveListItemUpCommand, moveListItemDownCommand,
+} from '../extensions/markdownOutlineKeymap'
+import { MARKDOWN_OUTLINE_EDIT_EVENT, type OutlineAction } from '../components/markdownOutlineEvents'
 import { nativeTextAssistanceDisabledAttributes } from '../lib/nativeTextAssistance'
 
 const FONT_FAMILY = '"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
@@ -298,9 +302,24 @@ export function useCodeMirror(
     }
     window.addEventListener(MARKDOWN_TABLE_EDIT_EVENT, handleTableEdit)
 
+    const OUTLINE_COMMANDS = {
+      indent: indentListItemCommand,
+      outdent: outdentListItemCommand,
+      'move-up': moveListItemUpCommand,
+      'move-down': moveListItemDownCommand,
+    }
+    const handleOutlineEdit = (event: Event) => {
+      const detail = (event as CustomEvent<{ action: OutlineAction }>).detail
+      if (!detail) return
+      OUTLINE_COMMANDS[detail.action]?.(view)
+      view.focus()
+    }
+    window.addEventListener(MARKDOWN_OUTLINE_EDIT_EVENT, handleOutlineEdit)
+
     return () => {
       window.removeEventListener('grover-zoom-change', handleZoomChange)
       window.removeEventListener(MARKDOWN_TABLE_EDIT_EVENT, handleTableEdit)
+      window.removeEventListener(MARKDOWN_OUTLINE_EDIT_EVENT, handleOutlineEdit)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (parent as any).__cmView
       view.destroy()

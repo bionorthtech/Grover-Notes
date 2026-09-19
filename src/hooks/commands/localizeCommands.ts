@@ -13,6 +13,10 @@ const GROUP_LABEL_KEYS = {
 } satisfies Record<CommandGroup, TranslationKey>
 
 const STATIC_LABEL_KEYS: Partial<Record<string, TranslationKey>> = {
+  'outline-indent': 'command.outline.indent',
+  'outline-outdent': 'command.outline.outdent',
+  'outline-move-up': 'command.outline.moveUp',
+  'outline-move-down': 'command.outline.moveDown',
   'table-format': 'command.table.format',
   'table-insert-row-below': 'command.table.insertRowBelow',
   'table-insert-row-above': 'command.table.insertRowAbove',
