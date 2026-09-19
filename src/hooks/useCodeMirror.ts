@@ -18,6 +18,7 @@ import { resolveArrowLigatureInput } from '../utils/arrowLigatures'
 import { zoomCursorFix } from '../extensions/zoomCursorFix'
 import { markdownTableKeymap, formatTableCommand, tableEditCommand } from '../extensions/markdownTableKeymap'
 import { MARKDOWN_TABLE_EDIT_EVENT, type MarkdownTableEditDetail } from '../components/markdownTableEvents'
+import { markdownOutlineKeymap } from '../extensions/markdownOutlineKeymap'
 import { nativeTextAssistanceDisabledAttributes } from '../lib/nativeTextAssistance'
 
 const FONT_FAMILY = '"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
@@ -253,6 +254,7 @@ export function useCodeMirror(
         history(),
         buildArrowLigaturesExtension(),
         markdownTableKeymap(),
+        markdownOutlineKeymap(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         buildSaveKeymap(callbacksRef),
         buildBaseTheme(),
